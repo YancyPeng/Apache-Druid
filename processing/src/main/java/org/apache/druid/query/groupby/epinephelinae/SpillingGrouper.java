@@ -174,6 +174,7 @@ public class SpillingGrouper<KeyType> implements Grouper<KeyType>
     if (result.isOk() || !spillingAllowed || temporaryStorage.maxSize() <= 0) {
       return result;
     } else {
+      // info: 哈希表不够用
       // Expecting all-or-nothing behavior.
       assert result.getCount() == 0;
 
@@ -252,6 +253,7 @@ public class SpillingGrouper<KeyType> implements Grouper<KeyType>
     iterators.add(grouper.iterator(sorted));
 
     final Closer closer = Closer.create();
+    // info: 磁盘中的临时文件，保存有排序好的数据行
     for (final File file : files) {
       final MappingIterator<Entry<KeyType>> fileIterator = read(file, keySerde.keyClazz());
       iterators.add(
@@ -281,6 +283,7 @@ public class SpillingGrouper<KeyType> implements Grouper<KeyType>
     }
 
     final Iterator<Entry<KeyType>> baseIterator;
+    // info: 调用 K 路合并接口
     if (sortHasNonGroupingFields) {
       baseIterator = CloseableIterators.mergeSorted(iterators, defaultOrderKeyObjComparator);
     } else {
@@ -294,7 +297,9 @@ public class SpillingGrouper<KeyType> implements Grouper<KeyType>
 
   private void spill() throws IOException
   {
+    // info: 这里的 grouper 是 BufferHashGrouper
     try (CloseableIterator<Entry<KeyType>> iterator = grouper.iterator(true)) {
+      // info: 将迭代器中的数据一行一行写入临时文件
       files.add(spill(iterator));
       dictionaryFiles.add(spill(keySerde.getDictionary().iterator()));
 

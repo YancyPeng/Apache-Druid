@@ -186,6 +186,7 @@ public class RowBasedGrouperHelper
     // concurrencyHint >= 1 for concurrent groupers, -1 for single-threaded
     Preconditions.checkArgument(concurrencyHint >= 1 || concurrencyHint == -1, "invalid concurrencyHint");
 
+    // info: concurrencyHint 这个值大于1
     if (concurrencyHint >= 1) {
       Preconditions.checkNotNull(grouperSorter, "grouperSorter executor must be provided");
     }
@@ -269,6 +270,7 @@ public class RowBasedGrouperHelper
           limitSpec
       );
 
+      // info: concurrencyHint 大于1，所以是返回的是 ConcurrentGrouper
       grouper = new ConcurrentGrouper<>(
           querySpecificConfig,
           bufferSupplier,

@@ -169,6 +169,18 @@ public class QueryResource implements QueryCountStatsProvider
     return Response.status(Response.Status.ACCEPTED).build();
   }
 
+  /**
+   * info: cliPeon 和 historical 都共用的类
+   *
+   * info: historical 使用 ServerManager 类来处理
+   *
+   * info:
+   * @param in
+   * @param pretty
+   * @param req
+   * @return
+   * @throws IOException
+   */
   @POST
   @Produces({MediaType.APPLICATION_JSON, SmileMediaTypes.APPLICATION_JACKSON_SMILE})
   @Consumes({MediaType.APPLICATION_JSON, SmileMediaTypes.APPLICATION_JACKSON_SMILE, APPLICATION_SMILE})
@@ -180,6 +192,7 @@ public class QueryResource implements QueryCountStatsProvider
       @Context final HttpServletRequest req
   ) throws IOException
   {
+    // info: ClientQuerySegmentWalker
     final QueryLifecycle queryLifecycle = queryLifecycleFactory.factorize();
     Query<?> query = null;
 
@@ -210,6 +223,7 @@ public class QueryResource implements QueryCountStatsProvider
         throw new ForbiddenException(authResult.toString());
       }
 
+      // info: 执行查询
       final QueryLifecycle.QueryResponse queryResponse = queryLifecycle.execute();
       final Sequence<?> results = queryResponse.getResults();
       final ResponseContext responseContext = queryResponse.getResponseContext();
@@ -221,6 +235,7 @@ public class QueryResource implements QueryCountStatsProvider
         return Response.notModified().build();
       }
 
+      // info: 做个标记，目前看起来就是这里把 resultRow 变成了真正的值
       final Yielder<?> yielder = Yielders.each(results);
 
       try {

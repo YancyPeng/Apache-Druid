@@ -102,6 +102,7 @@ public class PlannerFactory
         plannerConfig,
         queryContext
     );
+    // info：queryMarker 是从这里生成的
     final QueryMaker queryMaker = new QueryMaker(queryLifecycleFactory, plannerContext, jsonMapper);
     final FrameworkConfig frameworkConfig = buildFrameworkConfig(plannerContext, queryMaker);
 

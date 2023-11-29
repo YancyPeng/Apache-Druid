@@ -128,6 +128,7 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
   {
     this(
         emitter,
+        // info: CachingClusteredClient
         (QuerySegmentWalker) clusterClient,
         (QuerySegmentWalker) localClient,
         warehouse,
@@ -187,6 +188,7 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
       // to query, but this is not correct when there's a right or full outer join going on.
       // See https://github.com/apache/druid/issues/9229 for details.
       return new QuerySwappingQueryRunner<>(
+              // info: clusterClient = CachingClusteredClient
           decorateClusterRunner(newQuery, clusterClient.getQueryRunnerForIntervals(newQuery, intervals)),
           query,
           newQuery
@@ -392,6 +394,7 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
    * @param query             the query
    * @param baseClusterRunner runner from {@link #clusterClient}
    */
+  // info: ResultLevelCachingQueryRunner -> RetryQueryRunner -> CachingClusteredClient
   private <T> QueryRunner<T> decorateClusterRunner(Query<T> query, QueryRunner<T> baseClusterRunner)
   {
     final QueryToolChest<T, Query<T>> toolChest = warehouse.getToolChest(query);
@@ -400,7 +403,9 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
         .create(
             new SetAndVerifyContextQueryRunner<>(
                 serverConfig,
+                // info: 重试的 runner
                 new RetryQueryRunner<>(
+                        // info: CachingClusteredClient
                     baseClusterRunner,
                     clusterClient::getQueryRunnerForSegments,
                     retryConfig,
@@ -409,6 +414,7 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
             )
         )
         .applyPreMergeDecoration()
+            // info: 合并结果
         .mergeResults()
         .applyPostMergeDecoration()
         .emitCPUTimeMetric(emitter)

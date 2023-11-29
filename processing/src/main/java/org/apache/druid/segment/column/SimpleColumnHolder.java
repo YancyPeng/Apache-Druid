@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 class SimpleColumnHolder implements ColumnHolder
 {
   private final ColumnCapabilities capabilities;
+  // info: md终于找到你
   private final Supplier<? extends BaseColumn> columnSupplier;
   @Nullable
   private final Supplier<BitmapIndex> bitmapIndex;

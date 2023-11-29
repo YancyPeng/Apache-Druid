@@ -48,11 +48,13 @@ public class PrioritizedExecutorService extends AbstractExecutorService implemen
   public static PrioritizedExecutorService create(Lifecycle lifecycle, DruidProcessingConfig config)
   {
     final PrioritizedExecutorService service = new PrioritizedExecutorService(
+            // info: 其实是一个 fixedThreadPool
         new ThreadPoolExecutor(
             config.getNumThreads(),
             config.getNumThreads(),
             0L,
             TimeUnit.MILLISECONDS,
+            // info: 但是队列替换成了带有 优先级的 阻塞队列
             new PriorityBlockingQueue<Runnable>(),
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat(config.getFormatString()).build()
         ),
@@ -102,6 +104,7 @@ public class PrioritizedExecutorService extends AbstractExecutorService implemen
   )
   {
     this.threadPoolExecutor = threadPoolExecutor;
+    // info: 就是 threadPoolExecutor ， 没有什么区别
     this.delegate = MoreExecutors.listeningDecorator(Preconditions.checkNotNull(threadPoolExecutor));
     this.delegateQueue = threadPoolExecutor.getQueue();
     this.allowRegularTasks = allowRegularTasks;
@@ -294,6 +297,7 @@ class PrioritizedListenableFutureTask<V> implements RunnableFuture<V>,
     return insertionPlace;
   }
 
+  // info: 使用 compareTo 方法比较 队列内部对象 的优先级
   @Override
   public int compareTo(PrioritizedListenableFutureTask otherTask)
   {

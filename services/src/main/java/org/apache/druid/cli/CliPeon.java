@@ -230,6 +230,8 @@ public class CliPeon extends GuiceRunnable
                   .toInstance(new SingleFileTaskReportFileWriter(new File(taskReportPath)));
 
             binder.bind(TaskRunner.class).to(SingleTaskBackgroundRunner.class);
+            // info: 原来是这里,执行的是 SingleTaskBackgroundRunner.getQueryRunnerForSegments 获取QueryRunner --> RealtimeIndexTask.getQueryRunner-->RealtimePlumber.getQueryRunner
+
             binder.bind(QuerySegmentWalker.class).to(SingleTaskBackgroundRunner.class);
             binder.bind(SingleTaskBackgroundRunner.class).in(ManageLifecycle.class);
 
@@ -284,6 +286,7 @@ public class CliPeon extends GuiceRunnable
             return task.getId();
           }
         },
+            // info: queryResource
         new QueryablePeonModule(),
         new IndexingServiceFirehoseModule(),
         new IndexingServiceInputSourceModule(),

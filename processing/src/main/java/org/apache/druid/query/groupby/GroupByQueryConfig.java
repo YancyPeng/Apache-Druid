@@ -92,6 +92,7 @@ public class GroupByQueryConfig
   private int intermediateCombineDegree = 8;
 
   @JsonProperty
+  // info: druid.query.groupBy.numParallelCombineThreads 参数
   private int numParallelCombineThreads = 1;
 
   @JsonProperty

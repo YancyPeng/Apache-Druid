@@ -111,10 +111,13 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
     this.queryProcessingPool = queryProcessingPool;
     this.queryWatcher = queryWatcher;
     this.queryables = Iterables.unmodifiableIterable(Iterables.filter(queryables, Predicates.notNull()));
+    // info: processingConfig.getNumThreads()，受制于 druid.processing.numThreads 参数，默认是 (cpuCores - 1)，显然大于1
     this.concurrencyHint = concurrencyHint;
+    // info: 默认是  Math.max(2, druid.processing.numThreads / 4)，受 druid.processing.numMergeBuffers 参数限制
     this.mergeBufferPool = mergeBufferPool;
     this.spillMapper = spillMapper;
     this.processingTmpDir = processingTmpDir;
+    // info: 堆外可用内存大小，默认 1GB, 受制于 druid.processing.buffer.sizeBytes 参数
     this.mergeBufferSize = mergeBufferSize;
   }
 
@@ -139,6 +142,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
         )
         .withoutThreadUnsafeState();
 
+
     if (QueryContexts.isBySegment(query) || forceChainedExecution) {
       ChainedExecutionQueryRunner<ResultRow> runner = new ChainedExecutionQueryRunner<>(queryProcessingPool, queryWatcher, queryables);
       return runner.run(queryPlusForRunners, responseContext);
@@ -151,6 +155,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
         StringUtils.format("druid-groupBy-%s_%s", UUID.randomUUID(), query.getId())
     );
 
+    // info: 获取当前查询的优先级
     final int priority = QueryContexts.getPriority(query);
 
     // Figure out timeoutAt time now, so we can apply the timeout to both the mergeBufferPool.take and the actual
@@ -162,12 +167,14 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
     return new BaseSequence<>(
         new BaseSequence.IteratorMaker<ResultRow, CloseableGrouperIterator<RowBasedKey, ResultRow>>()
         {
+          // info: 这个 make 在 QueryResouce 中调用，Yielders.each()
           @Override
           public CloseableGrouperIterator<RowBasedKey, ResultRow> make()
           {
             final Closer resources = Closer.create();
 
             try {
+              // info: 堆外内存不足时，使用磁盘文件保存聚合的中间结果
               final LimitedTemporaryStorage temporaryStorage = new LimitedTemporaryStorage(
                   temporaryStorageDirectory,
                   querySpecificConfig.getMaxOnDiskStorage()
@@ -177,6 +184,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
               resources.register(temporaryStorageHolder);
 
               // If parallelCombine is enabled, we need two merge buffers for parallel aggregating and parallel combining
+              // info: 这个值默认是 1
               final int numMergeBuffers = querySpecificConfig.getNumParallelCombineThreads() > 1 ? 2 : 1;
 
               final List<ReferenceCountingResourceHolder<ByteBuffer>> mergeBufferHolders = getMergeBuffersHolder(
@@ -191,6 +199,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
                                                                                       mergeBufferHolders.get(1) :
                                                                                       null;
 
+              // info: 执行排序、聚合、创建迭代器的工具类，grouper 是具体的执行类
               Pair<Grouper<RowBasedKey>, Accumulator<AggregateResult, ResultRow>> pair =
                   RowBasedGrouperHelper.createGrouperAccumulatorPair(
                       query,
@@ -207,6 +216,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
                       timeoutAt,
                       mergeBufferSize
                   );
+              //info: 由于 concurrencyHint > 1, 这个 grouper 是 ConcurrentGrouper
               final Grouper<RowBasedKey> grouper = pair.lhs;
               final Accumulator<AggregateResult, ResultRow> accumulator = pair.rhs;
               grouper.init();
@@ -227,6 +237,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
                                 throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
                               }
 
+                              // info: 每个 segment 都要区分开来查询，同一个 query 的 segment 具有相同的 priority
                               ListenableFuture<AggregateResult> future = queryProcessingPool.submitRunnerTask(
                                   new AbstractPrioritizedQueryRunnerCallable<AggregateResult, ResultRow>(priority, input)
                                   {
@@ -242,6 +253,7 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
                                       ) {
                                         // Return true if OK, false if resources were exhausted.
                                         return input.run(queryPlusForRunners, responseContext)
+                                                // info: accumulator 根据 dim 聚合数据
                                             .accumulate(AggregateResult.ok(), accumulator);
                                       }
                                       catch (QueryInterruptedException | QueryTimeoutException e) {
@@ -270,10 +282,12 @@ public class GroupByMergingQueryRunnerV2 implements QueryRunner<ResultRow>
                       )
                   );
 
+              //info: 等待所有查询完成
               if (!isSingleThreaded) {
                 waitForFutureCompletion(query, futures, hasTimeout, timeoutAt - System.currentTimeMillis());
               }
 
+              // info: 排序，太复杂了，暂时难以理解
               return RowBasedGrouperHelper.makeGrouperIterator(
                   grouper,
                   query,

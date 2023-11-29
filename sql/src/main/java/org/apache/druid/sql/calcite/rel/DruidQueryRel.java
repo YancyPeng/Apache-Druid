@@ -162,6 +162,7 @@ public class DruidQueryRel extends DruidRel<DruidQueryRel>
     // is the outermost query and it will actually get run as a native query. Druid's native query layer will
     // finalize aggregations for the outermost query even if we don't explicitly ask it to.
 
+    // info: toDruidQuery 把用户的 sql 转成 query 对象
     return getQueryMaker().runQuery(toDruidQuery(false));
   }
 

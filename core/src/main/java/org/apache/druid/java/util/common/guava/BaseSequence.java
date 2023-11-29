@@ -63,6 +63,7 @@ public class BaseSequence<T, IterType extends Iterator<T>> implements Sequence<T
       final YieldingAccumulator<OutType, T> accumulator
   )
   {
+    // info: 这里调用了 make，make 匿名函数在 GroupByQueryEngineV2 中有调用
     final IterType iterator = maker.make();
 
     try {
@@ -86,6 +87,7 @@ public class BaseSequence<T, IterType extends Iterator<T>> implements Sequence<T
   )
   {
     OutType retVal = initValue;
+    // info: 这里调用了 GroupByEngineIterator 的 hasNext
     while (!accumulator.yielded() && iter.hasNext()) {
       retVal = accumulator.accumulate(retVal, iter.next());
     }

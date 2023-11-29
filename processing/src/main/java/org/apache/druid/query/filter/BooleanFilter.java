@@ -70,6 +70,7 @@ public interface BooleanFilter extends Filter
     return allColumns;
   }
 
+  // info: AndFilter 和 OrFilter 自带的，只要有一个 subFilter 为false，整体就为 false
   @Override
   default boolean supportsBitmapIndex(BitmapIndexSelector selector)
   {

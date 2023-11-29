@@ -99,6 +99,7 @@ public class AndFilter implements BooleanFilter
       bitmapResults.add(bitmapResult);
     }
 
+    // info: A ∩ B，取交集
     return bitmapResultFactory.intersection(bitmapResults);
   }
 

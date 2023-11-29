@@ -205,6 +205,7 @@ public class BufferHashGrouper<KeyType> extends AbstractBufferHashGrouper<KeyTyp
       }
 
       // Sort offsets in-place.
+      // info: 对 偏移量 进行排序，根据偏移量就能找到对应的数据行，相当于索引
       Collections.sort(
           wrappedOffsets,
           (lhs, rhs) -> {

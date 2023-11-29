@@ -88,7 +88,9 @@ public class SqlResource
       @Context final HttpServletRequest req
   ) throws IOException
   {
+    // info: 当前请求的 lifecycle
     final SqlLifecycle lifecycle = sqlLifecycleFactory.factorize();
+    // info: 如果没有设置的话，那么就是 UUID
     final String sqlQueryId = lifecycle.initialize(sqlQuery.getQuery(), sqlQuery.getContext());
     final String remoteAddr = req.getRemoteAddr();
     final String currThreadName = Thread.currentThread().getName();
@@ -97,7 +99,10 @@ public class SqlResource
       Thread.currentThread().setName(StringUtils.format("sql[%s]", sqlQueryId));
 
       lifecycle.setParameters(sqlQuery.getParameterList());
+
+      // info: 设置 marker
       lifecycle.validateAndAuthorize(req);
+      // info: 解析 SQL，设置相应的处理器
       final PlannerContext plannerContext = lifecycle.plan();
       final DateTimeZone timeZone = plannerContext.getTimeZone();
 
@@ -115,6 +120,7 @@ public class SqlResource
         columnNames[i] = fieldList.get(i).getName();
       }
 
+      // info: 执行查询
       final Yielder<Object[]> yielder0 = Yielders.each(lifecycle.execute());
 
       try {

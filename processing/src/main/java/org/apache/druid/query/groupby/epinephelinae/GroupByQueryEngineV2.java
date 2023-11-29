@@ -198,6 +198,7 @@ public class GroupByQueryEngineV2
     );
 
     return cursors.flatMap(
+            // info: 这里 new 的 BaseSequence
         cursor -> new BaseSequence<>(
             new BaseSequence.IteratorMaker<ResultRow, GroupByEngineIterator<?>>()
             {

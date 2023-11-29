@@ -224,7 +224,7 @@ public class SinkQuerySegmentWalker implements QuerySegmentWalker
                     }
                     final Pair<SegmentReference, Closeable> segmentAndCloseable = maybeSegmentAndCloseable.get();
                     try {
-
+                        // info: 根据 segnment 获取匿名的 QueryRunner
                       QueryRunner<T> runner = factory.createRunner(segmentAndCloseable.lhs);
 
                       // 1) Only use caching if data is immutable

@@ -42,6 +42,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
   private AtomicReference<Integer> computedBufferSizeBytes = new AtomicReference<>();
 
   @Config({"druid.computation.buffer.size", "${base_path}.buffer.sizeBytes"})
+  // info: druid.processing.buffer.sizeBytes , 临时可使用的堆外内存大小，默认最大 1 GB
   public HumanReadableBytes intermediateComputeSizeBytesConfigured()
   {
     return DEFAULT_PROCESSING_BUFFER_SIZE_BYTES;
@@ -81,6 +82,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
     int totalNumBuffers = numMergeBuffers + numProcessingThreads;
     int sizePerBuffer = (int) ((double) directSizeBytes / (double) (totalNumBuffers + 1));
 
+    // info: 默认最大 1 GB
     final int computedSizePerBuffer = Math.min(sizePerBuffer, MAX_DEFAULT_PROCESSING_BUFFER_SIZE_BYTES);
     if (computedBufferSizeBytes.compareAndSet(null, computedSizePerBuffer)) {
       log.info(
@@ -111,6 +113,8 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
     return DEFAULT_NUM_THREADS;
   }
 
+
+  // info: 默认是  Math.max(2, druid.processing.numThreads / 4)
   public int getNumMergeBuffers()
   {
     int numMergeBuffersConfigured = getNumMergeBuffersConfigured();

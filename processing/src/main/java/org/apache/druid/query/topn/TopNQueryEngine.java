@@ -74,6 +74,7 @@ public class TopNQueryEngine
     final List<Interval> queryIntervals = query.getQuerySegmentSpec().getIntervals();
     final Filter filter = Filters.convertToCNFFromQueryContext(query, Filters.toFilter(query.getDimensionsFilter()));
     final Granularity granularity = query.getGranularity();
+    // info: 选择一个 top N 算法，之后再看
     final TopNMapFn mapFn = getMapFn(query, adapter, queryMetrics);
 
     Preconditions.checkArgument(
@@ -106,6 +107,7 @@ public class TopNQueryEngine
   /**
    * Choose the best {@link TopNAlgorithm} for the given query.
    */
+  // info: 选择 topN 查询的算法
   private TopNMapFn getMapFn(
       final TopNQuery query,
       final StorageAdapter adapter,

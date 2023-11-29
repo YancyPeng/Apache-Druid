@@ -70,10 +70,12 @@ public class HiLoQueryLaningStrategy implements QueryLaningStrategy
     // QueryContexts.getPriority gives a default, but it can parse the value to integer. Before calling QueryContexts.getPriority
     // we make sure that priority has been set.
     Integer priority = null;
+    // info: 读取 query context 中的 priority 字段
     if (null != theQuery.getContextValue(QueryContexts.PRIORITY_KEY)) {
       priority = QueryContexts.getPriority(theQuery);
     }
     final String lane = theQuery.getContextValue(QueryContexts.LANE_KEY);
+    // info: 如果 lane 不为空，且 priority < 0 ，就设置成 low
     if (lane == null && priority != null && priority < 0) {
       return Optional.of(LOW);
     }

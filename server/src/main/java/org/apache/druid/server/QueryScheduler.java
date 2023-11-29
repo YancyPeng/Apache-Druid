@@ -86,10 +86,12 @@ public class QueryScheduler implements QueryWatcher
     this.queryDatasources = Multimaps.synchronizedSetMultimap(HashMultimap.create());
     // if totalNumThreads is above 0 and less than druid.server.http.numThreads, enforce total limit
     final boolean limitTotal;
+    // info: totalNumThreads 受参数 druid.query.scheduler.numThreads	控制
     if (totalNumThreads > 0 && totalNumThreads < serverConfig.getNumThreads()) {
       limitTotal = true;
       this.totalCapacity = totalNumThreads;
     } else {
+      // info: 当 druid.query.scheduler.numThreads > druid.server.http.numThreads 时，不设置 total 限制
       limitTotal = false;
       this.totalCapacity = serverConfig.getNumThreads();
     }
@@ -117,6 +119,7 @@ public class QueryScheduler implements QueryWatcher
   /**
    * Assign a query a priority and lane (if not set)
    */
+  // info: 添加 lane 信息到当前的 query 对象中
   public <T> Query<T> prioritizeAndLaneQuery(QueryPlus<T> queryPlus, Set<SegmentServerSelector> segments)
   {
     Query<T> query = queryPlus.getQuery();
@@ -139,6 +142,7 @@ public class QueryScheduler implements QueryWatcher
    */
   public <T> Sequence<T> run(Query<?> query, Sequence<T> resultSequence)
   {
+    // info: 原理就是 semaphore
     List<Bulkhead> bulkheads = acquireLanes(query);
     return resultSequence.withBaggage(() -> finishLanes(bulkheads));
   }
@@ -212,7 +216,11 @@ public class QueryScheduler implements QueryWatcher
     final Optional<BulkheadConfig> totalConfig = laneRegistry.getConfiguration(TOTAL);
     List<Bulkhead> hallPasses = new ArrayList<>(2);
     try {
+
+      // info: 同时获取两个资源，total 是 druid.server.http.numThreads 或者 druid.query.scheduler.numThreads
+
       // if we have a lane, get it first
+      //info： 用 high/low 的资源，
       laneConfig.ifPresent(config -> {
         Bulkhead laneLimiter = laneRegistry.bulkhead(lane, config);
         if (!laneLimiter.tryAcquirePermission()) {
@@ -225,6 +233,7 @@ public class QueryScheduler implements QueryWatcher
       // to check for total capacity exceeded and release the lane (if present) before throwing capacity exceeded
       // note that this isn't strictly fair: the bulkhead doesn't use a fair semaphore, the first to acquire the lane
       // might lose to one that came after it when acquiring the total, or an unlaned query might lose to a laned query
+      // info: 直接使用总的资源
       totalConfig.ifPresent(config -> {
         Bulkhead totalLimiter = laneRegistry.bulkhead(TOTAL, config);
         if (!totalLimiter.tryAcquirePermission()) {
@@ -265,12 +274,14 @@ public class QueryScheduler implements QueryWatcher
   {
     Map<String, BulkheadConfig> configs = new HashMap<>();
     if (hasTotalLimit) {
+      // info: 如果 druid.query.scheduler.numThreads > druid.server.http.numThreads，hasTotalLimit 为 false，不设置 totalLimit
       configs.put(
           TOTAL,
           BulkheadConfig.custom().maxConcurrentCalls(totalCapacity).maxWaitDuration(Duration.ZERO).build()
       );
     }
     for (Object2IntMap.Entry<String> entry : laningStrategy.getLaneLimits(totalCapacity).object2IntEntrySet()) {
+      // info: 这里是设置 high / low 的
       configs.put(
           entry.getKey(),
           BulkheadConfig.custom().maxConcurrentCalls(entry.getIntValue()).maxWaitDuration(Duration.ZERO).build()

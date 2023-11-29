@@ -70,6 +70,7 @@ public class CaffeineCache implements org.apache.druid.client.cache.Cache
     if (config.getSizeInBytes() >= 0) {
       builder.maximumWeight(config.getSizeInBytes());
     } else {
+      // info: 如果没有设置内存大小的话，默认的大小是 JVM 堆内存的 10%
       builder.maximumWeight(Math.min(MAX_DEFAULT_BYTES, JvmUtils.getRuntimeInfo().getMaxHeapSizeBytes() / 10));
     }
     builder

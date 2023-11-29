@@ -312,6 +312,7 @@ public class ConcurrentGrouper<KeyType> implements Grouper<KeyType>
       throw new ISE("Grouper is closed");
     }
 
+    //info: 排序的话，会执行parallelSortAndGetGroupersIterator()方法，这里会往公用的固定线程池(带有优先级队列的)提交任务，执行上一步SpillingGrouper构造迭代器的逻辑，等待所有任务执行完成
     final List<CloseableIterator<Entry<KeyType>>> sortedIterators = sorted && isParallelizable() ?
                                                                     parallelSortAndGetGroupersIterator() :
                                                                     getGroupersIterator(sorted);
@@ -324,10 +325,13 @@ public class ConcurrentGrouper<KeyType> implements Grouper<KeyType>
       // merged dictionary is used for all combining threads
       final List<String> dictionary = tryMergeDictionary();
       if (dictionary != null) {
+        // info: 多线程执行 K 路合并
+        // info: druid.query.groupBy.numParallelCombineThreads 参数，默认是1，即不采用多线程合并
         return parallelCombiner.combine(sortedIterators, dictionary);
       }
     }
 
+    // info: 单线程 K 路合并
     return sorted ?
            CloseableIterators.mergeSorted(sortedIterators, keyObjComparator) :
            CloseableIterators.concat(sortedIterators);

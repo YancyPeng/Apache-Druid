@@ -140,6 +140,7 @@ public class DruidQuery
     this.outputRowSignature = computeOutputRowSignature(sourceRowSignature, selectProjection, grouping, sorting);
     this.outputRowType = Preconditions.checkNotNull(outputRowType, "outputRowType");
     this.virtualColumnRegistry = Preconditions.checkNotNull(virtualColumnRegistry, "virtualColumnRegistry");
+    // info: 看起来这里是对 SQL 进行解析，看看具体是什么类型的
     this.query = computeQuery();
   }
 
@@ -744,16 +745,22 @@ public class DruidQuery
       return outerQuery;
     }
 
+    // info : group by __time
+    // info: select sum(column1) from xxxx
+    // info: group by TIME_FLOOR(__time, 'P1D', TIMESTAMP '${origin}','${summer_timezone}')
     final TimeseriesQuery tsQuery = toTimeseriesQuery();
     if (tsQuery != null) {
       return tsQuery;
     }
 
+    // info: 只能 group by 一个字段, group by 后不能有 having，order by <= 1 个字段，必须要有 limit 且不能有 offset ,
+    // info: group by xx order by xx limit 10
     final TopNQuery topNQuery = toTopNQuery();
     if (topNQuery != null) {
       return topNQuery;
     }
 
+    // info: 否则剩下的 group by 大部分都是这个，基本上有 group by 字段就行
     final GroupByQuery groupByQuery = toGroupByQuery();
     if (groupByQuery != null) {
       return groupByQuery;
@@ -773,14 +780,17 @@ public class DruidQuery
    * @return query
    */
   @Nullable
+  // info: group by  TIME_FLOOR(__time, 'P1D', TIMESTAMP '${origin}','${summer_timezone}')
   public TimeseriesQuery toTimeseriesQuery()
   {
+    // info: group by xx having xx
     if (grouping == null
         || grouping.getSubtotals().hasEffect(grouping.getDimensionSpecs())
         || grouping.getHavingFilter() != null) {
       return null;
     }
 
+    // info: group by xx order by xx limit 10,10
     if (sorting != null && sorting.getOffsetLimit().hasOffset()) {
       // Timeseries cannot handle offsets.
       return null;
@@ -790,6 +800,8 @@ public class DruidQuery
     final boolean descending;
     int timeseriesLimit = 0;
     final Map<String, Object> theContext = new HashMap<>();
+    // info: 怎么理解这个 empty ？
+    // info: 猜测是  select sum() from xxxx
     if (grouping.getDimensions().isEmpty()) {
       queryGranularity = Granularities.ALL;
       descending = false;
@@ -838,6 +850,7 @@ public class DruidQuery
       }
     } else {
       // More than one dimension, timeseries cannot handle.
+      // info:  group by column1, column2
       return null;
     }
 
@@ -845,8 +858,10 @@ public class DruidQuery
     // is the group, so we should not skip empty buckets. When there are no results, this means we return the
     // initialized state for given aggregators instead of nothing.
     if (!Granularities.ALL.equals(queryGranularity)) {
+      // info: 默认情况下，只要不是 ALL，就会跳过 empty bucket
       theContext.put(TimeseriesQuery.SKIP_EMPTY_BUCKETS, true);
     }
+    // info: 但是要注意这里还是有可能会被 用户自己的配置给覆盖
     theContext.putAll(plannerContext.getQueryContext());
 
     final Pair<DataSource, Filtration> dataSourceFiltrationPair = getFiltration(
@@ -864,6 +879,7 @@ public class DruidQuery
 
     return new TimeseriesQuery(
         newDataSource,
+        // info: new MultipleIntervalSegmentSpec(intervals);
         filtration.getQuerySegmentSpec(),
         descending,
         getVirtualColumns(false),
@@ -884,8 +900,7 @@ public class DruidQuery
   @Nullable
   public TopNQuery toTopNQuery()
   {
-    // Must have GROUP BY one column, no GROUPING SETS, ORDER BY ≤ 1 column, LIMIT > 0 and ≤ maxTopNLimit,
-    // no OFFSET, no HAVING.
+    // info: Must have GROUP BY one column, no GROUPING SETS, ORDER BY ≤ 1 column, LIMIT > 0 and ≤ maxTopNLimit,no OFFSET, no HAVING.
     final boolean topNOk = grouping != null
                            && grouping.getDimensions().size() == 1
                            && !grouping.getSubtotals().hasEffect(grouping.getDimensionSpecs())
@@ -953,6 +968,7 @@ public class DruidQuery
         dimensionSpec,
         topNMetricSpec,
         Ints.checkedCast(sorting.getOffsetLimit().getLimit()),
+        // info: MultipleIntervalSegmentSpec(intervals)
         filtration.getQuerySegmentSpec(),
         filtration.getDimFilter(),
         Granularities.ALL,
@@ -967,13 +983,16 @@ public class DruidQuery
    *
    * @return query or null
    */
+  // info: 看看是否是 groupBy 查询
   @Nullable
   public GroupByQuery toGroupByQuery()
   {
+    // info: select sum() count() from table
     if (grouping == null) {
       return null;
     }
 
+    // info: group by xx order by xx limit 0
     if (sorting != null && sorting.getOffsetLimit().hasLimit() && sorting.getOffsetLimit().getLimit() <= 0) {
       // Cannot handle zero or negative limits.
       return null;
@@ -988,6 +1007,8 @@ public class DruidQuery
     final Filtration filtration = dataSourceFiltrationPair.rhs;
 
     final DimFilterHavingSpec havingSpec;
+
+    // info: group by xxx having xxx > yy
     if (grouping.getHavingFilter() != null) {
       havingSpec = new DimFilterHavingSpec(
           Filtration.create(grouping.getHavingFilter())
@@ -1005,6 +1026,7 @@ public class DruidQuery
 
     GroupByQuery query = new GroupByQuery(
         newDataSource,
+        // info: MultipleIntervalSegmentSpec(intervals);
         filtration.getQuerySegmentSpec(),
         getVirtualColumns(true),
         filtration.getDimFilter(),
@@ -1083,6 +1105,7 @@ public class DruidQuery
   @Nullable
   public ScanQuery toScanQuery()
   {
+    // info: 不支持 group by，就是不需要聚合的意思
     if (grouping != null) {
       // Scan cannot GROUP BY.
       return null;
@@ -1146,6 +1169,7 @@ public class DruidQuery
 
     return new ScanQuery(
         newDataSource,
+        // info: MultipleIntervalSegmentSpec(intervals);
         filtration.getQuerySegmentSpec(),
         getVirtualColumns(true),
         ScanQuery.ResultFormat.RESULT_FORMAT_COMPACTED_LIST,

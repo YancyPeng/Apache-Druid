@@ -47,7 +47,13 @@ public class ThresholdBasedQueryPrioritizationStrategy implements QueryPrioritiz
   private final int segmentCountThreshold;
   private final int adjustment;
 
+  /**
+   * druid.query.scheduler.prioritization.periodThreshold
+   */
   private final Optional<Duration> periodThreshold;
+  /**
+   * druid.query.scheduler.prioritization.durationThreshold
+   */
   private final Optional<Duration> durationThreshold;
 
   @JsonCreator
@@ -73,20 +79,25 @@ public class ThresholdBasedQueryPrioritizationStrategy implements QueryPrioritiz
   }
 
   @Override
+  // info: 计算当前查询的 prority
   public <T> Optional<Integer> computePriority(QueryPlus<T> query, Set<SegmentServerSelector> segments)
   {
     Query<T> theQuery = query.getQuery();
+    // info: 检查当前查询的 startTime < currentTime - periodThreashold，受 druid.query.scheduler.prioritization.periodThreshold 参数影响
     final boolean violatesPeriodThreshold = periodThreshold.map(duration -> {
       final DateTime periodThresholdStartDate = DateTimes.nowUtc().minus(duration);
       return theQuery.getIntervals()
                      .stream()
                      .anyMatch(interval -> interval.getStart().isBefore(periodThresholdStartDate));
     }).orElse(false);
+    // info: 检查当前查询的 duration（endTime - startTime）> durationThreshold，受 druid.query.scheduler.prioritization.durationThreshold 参数影响
     final boolean violatesDurationThreshold =
         durationThreshold.map(duration -> theQuery.getDuration().isLongerThan(duration)).orElse(false);
+    // info: 检查当前查询的 segmentCount 值是否大于 segmentCountThreshold，受 druid.query.scheduler.prioritization.segmentCountThreshold 参数影响
     boolean violatesSegmentThreshold = segments.size() > segmentCountThreshold;
-
+    // info：计算 priority 值
     if (violatesPeriodThreshold || violatesDurationThreshold || violatesSegmentThreshold) {
+      // info: 我们的查询中不会手动设置 priority，默认是0，只要满足以上任一条件就是负数，就会被分配到 low pane
       final int adjustedPriority = QueryContexts.getPriority(theQuery) - adjustment;
       return Optional.of(adjustedPriority);
     }

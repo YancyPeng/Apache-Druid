@@ -218,6 +218,7 @@ public class SqlLifecycle
     synchronized (lock) {
       transition(State.INITIALIZED, State.AUTHORIZING);
       AuthenticationResult authResult = AuthorizationUtils.authenticationResultFromRequest(req);
+      // info: create marker
       validate(authResult);
       Access access = doAuthorize(
           AuthorizationUtils.authorizeAllResourceActions(
@@ -309,6 +310,7 @@ public class SqlLifecycle
     synchronized (lock) {
       transition(State.AUTHORIZED, State.PLANNED);
       Preconditions.checkNotNull(plannerContext, "Cannot plan, plannerContext is null");
+      // info：生成执行计划
       try (DruidPlanner planner = plannerFactory.createPlannerWithContext(plannerContext)) {
         this.plannerResult = planner.plan(sql);
       }

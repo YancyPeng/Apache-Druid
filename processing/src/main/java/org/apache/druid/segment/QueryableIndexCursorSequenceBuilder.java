@@ -83,6 +83,7 @@ public class QueryableIndexCursorSequenceBuilder
     this.index = index;
     this.interval = interval;
     this.virtualColumns = virtualColumns;
+    // info: prefilterBitMap
     this.filterBitmap = filterBitmap;
     this.minDataTimestamp = minDataTimestamp;
     this.maxDataTimestamp = maxDataTimestamp;
@@ -111,6 +112,7 @@ public class QueryableIndexCursorSequenceBuilder
     final Closer closer = Closer.create();
     closer.register(timestamps);
 
+    // info: 根据 granularity 来将 interval 切割，进行分组查询
     Iterable<Interval> iterable = gran.getIterable(interval);
     if (descending) {
       iterable = Lists.reverse(ImmutableList.copyOf(iterable));
@@ -173,6 +175,7 @@ public class QueryableIndexCursorSequenceBuilder
                 if (postFilter == null) {
                   return new QueryableIndexCursor(baseCursorOffset, columnSelectorFactory, myBucket);
                 } else {
+                  // info: 这里使用了 postFilter
                   FilteredOffset filteredOffset = new FilteredOffset(
                       baseCursorOffset,
                       columnSelectorFactory,

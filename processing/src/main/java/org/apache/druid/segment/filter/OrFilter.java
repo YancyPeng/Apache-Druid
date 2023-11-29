@@ -76,6 +76,7 @@ public class OrFilter implements BooleanFilter
       bitmapResults.add(filter.getBitmapResult(selector, bitmapResultFactory));
     }
 
+    //info:  A U B 取并集
     return bitmapResultFactory.union(bitmapResults);
   }
 

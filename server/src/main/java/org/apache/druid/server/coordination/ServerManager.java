@@ -111,6 +111,7 @@ public class ServerManager implements QuerySegmentWalker
     this.conglomerate = conglomerate;
     this.emitter = emitter;
 
+    // info: MetricsEmittingQueryProcessingPool
     this.queryProcessingPool = queryProcessingPool;
     this.cachePopulator = cachePopulator;
     this.cache = cache;
@@ -167,6 +168,7 @@ public class ServerManager implements QuerySegmentWalker
   @Override
   public <T> QueryRunner<T> getQueryRunnerForSegments(Query<T> query, Iterable<SegmentDescriptor> specs)
   {
+    // info: 根据当前的查询类型，获取不同的 runnerFactory
     final QueryRunnerFactory<T, Query<T>> factory = conglomerate.findFactory(query);
     if (factory == null) {
       final QueryUnsupportedException e = new QueryUnsupportedException(
@@ -179,7 +181,9 @@ public class ServerManager implements QuerySegmentWalker
     }
 
     final QueryToolChest<T, Query<T>> toolChest = factory.getToolchest();
+
     final DataSourceAnalysis analysis = DataSourceAnalysis.forDataSource(query.getDataSource());
+
     final AtomicLong cpuTimeAccumulator = new AtomicLong(0L);
 
     final VersionedIntervalTimeline<String, ReferenceCountingSegment> timeline;
@@ -212,6 +216,7 @@ public class ServerManager implements QuerySegmentWalker
     final FunctionalIterable<QueryRunner<T>> queryRunners = FunctionalIterable
         .create(specs)
         .transformCat(
+                // info: 每个 segment 都拆开单独执行
             descriptor -> Collections.singletonList(
                 buildQueryRunnerForSegment(
                     query,
@@ -228,6 +233,7 @@ public class ServerManager implements QuerySegmentWalker
 
     return CPUTimeMetricQueryRunner.safeBuild(
         new FinalizeResultsQueryRunner<>(
+                // info: 所以这里的 queryRunners 是 segment 粒度的，每个 segment 都单独执行
             toolChest.mergeResults(factory.mergeRunners(queryProcessingPool, queryRunners)),
             toolChest
         ),
@@ -270,6 +276,8 @@ public class ServerManager implements QuerySegmentWalker
     );
   }
 
+  // info: 核心的处理链路
+  // info: SetAndVerifyContextQueryRunner -> CPUTimeMetricQueryRunner -> PerSegmentOptimizingQueryRunner -> specificSegmentQueryRunner -> metricsEmittingQueryRunnerOuter -> bySegmentQueryRunner -> cachingQueryRunner -> metricsEmittingQueryRunnerInner -> ReferenceCountingSegmentQueryRunner
   private <T> QueryRunner<T> buildAndDecorateQueryRunner(
       final QueryRunnerFactory<T, Query<T>> factory,
       final QueryToolChest<T, Query<T>> toolChest,

@@ -76,6 +76,7 @@ import java.util.Iterator;
  * value files are identified as: StringUtils.format("%s_value_%d", columnName, fileNumber)
  * number of value files == numElements/numberOfElementsPerValueFile
  */
+// info: index 数据结构，看起来很关键
 public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
 {
   static final byte VERSION_ONE = 0x1;
@@ -269,6 +270,8 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
     // Ensure the value buffer's limit equals to capacity.
     firstValueBuffer = buffer.slice();
     valueBuffers = new ByteBuffer[]{firstValueBuffer};
+
+    // info: headerBuffer 是从 indexOffset 开始的子序列
     buffer.position(indexOffset);
     headerBuffer = buffer.slice();
   }
@@ -359,10 +362,13 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
     int minIndex = 0;
     int maxIndex = size - 1;
     while (minIndex <= maxIndex) {
+      //info： 二分法查找，看来这个是有序的，但是为什么会有序？数据应该是按照 __time 来排序的，dim 列怎么会有序？
+      //info: 这里应该是 dictionary
       int currIndex = (minIndex + maxIndex) >>> 1;
 
       T currValue = indexed.get(currIndex);
       int comparison = strategy.compare(currValue, value);
+      // info: 如果相同就返回当前的 下标，这个下标代表什么？
       if (comparison == 0) {
         return currIndex;
       }
@@ -615,7 +621,9 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
       endOffset = headerBuffer.getInt(0);
     } else {
       int headerPosition = (index - 1) * Integer.BYTES;
+      // info: 获取当前 value 的 startOffset
       startOffset = headerBuffer.getInt(headerPosition) + Integer.BYTES;
+      // info: 获取当前 value + 1 的 startOffset，用来当作 endOffset
       endOffset = headerBuffer.getInt(headerPosition + Integer.BYTES);
     }
     return copyBufferAndGet(firstValueBuffer, startOffset, endOffset);

@@ -340,6 +340,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
         final boolean specificSegments
     )
     {
+      //info: 根据 dataSrouce 获取 timeLine
       final Optional<? extends TimelineLookup<String, ServerSelector>> maybeTimeline = serverView.getTimeline(
           dataSourceAnalysis
       );
@@ -352,9 +353,13 @@ public class CachingClusteredClient implements QuerySegmentWalker
         computeUncoveredIntervals(timeline);
       }
 
+      // info: 根据 timeline 计算本次查询用到的 segment
       final Set<SegmentServerSelector> segmentServers = computeSegmentsToQuery(timeline, specificSegments);
       @Nullable
+      // info: 计算当前查询的 cacheKey
       final byte[] queryCacheKey = cacheKeyManager.computeSegmentLevelQueryCacheKey();
+
+      // info：HEADER_IF_NONE_MATCH 这个是从 ResultLevelCachingQueryRunner 传过来的
       if (query.getContext().get(QueryResource.HEADER_IF_NONE_MATCH) != null) {
         @Nullable
         final String prevEtag = (String) query.getContext().get(QueryResource.HEADER_IF_NONE_MATCH);
@@ -363,27 +368,34 @@ public class CachingClusteredClient implements QuerySegmentWalker
         if (null != currentEtag) {
           responseContext.put(Key.ETAG, currentEtag);
         }
+        // info: 如果没有什么变化，就不需要查询了，直接返回
         if (currentEtag != null && currentEtag.equals(prevEtag)) {
           return new ClusterQueryResult<>(Sequences.empty(), 0);
         }
       }
 
+      // info: 获取已经 cache 的 segment 列表
       final List<Pair<Interval, byte[]>> alreadyCachedResults =
           pruneSegmentsWithCachedResults(queryCacheKey, segmentServers);
 
+      // info: 在查询中添加 lane 信息，lane 信息是根据 priority 计算而来
       query = scheduler.prioritizeAndLaneQuery(queryPlus, segmentServers);
       queryPlus = queryPlus.withQuery(query);
       queryPlus = queryPlus.withQueryMetrics(toolChest);
       queryPlus.getQueryMetrics().reportQueriedSegmentCount(segmentServers.size()).emit(emitter);
 
+      // info：将 segment 按照 server 分组，segment 中就带有 server 信息
       final SortedMap<DruidServer, List<SegmentDescriptor>> segmentsByServer = groupSegmentsByServer(segmentServers);
       LazySequence<T> mergedResultSequence = new LazySequence<>(() -> {
         List<Sequence<T>> sequencesByInterval = new ArrayList<>(alreadyCachedResults.size() + segmentsByServer.size());
+        // info: 从缓存中填充
         addSequencesFromCache(sequencesByInterval, alreadyCachedResults);
+        // info: 从 server 中查询填充
         addSequencesFromServer(sequencesByInterval, segmentsByServer);
         return merge(sequencesByInterval);
       });
 
+      // info: 根据 lane 获取资源，和 druid.query.scheduler.numThreads	有关，获取不到将返回 429 Error
       return new ClusterQueryResult<>(scheduler.run(query, mergedResultSequence), segmentsByServer.size());
     }
 
@@ -504,6 +516,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
       }
     }
 
+    // info: 根据已有的 cache 来对 query 范围进行修改
     private List<Pair<Interval, byte[]>> pruneSegmentsWithCachedResults(
         final byte[] queryCacheKey,
         final Set<SegmentServerSelector> segments
@@ -513,11 +526,13 @@ public class CachingClusteredClient implements QuerySegmentWalker
         return Collections.emptyList();
       }
       final List<Pair<Interval, byte[]>> alreadyCachedResults = new ArrayList<>();
+      // info: 计算每个 segment 的 CacheKey
       Map<SegmentServerSelector, Cache.NamedKey> perSegmentCacheKeys = computePerSegmentCacheKeys(
           segments,
           queryCacheKey
       );
       // Pull cached segments from cache and remove from set of segments to query
+      // info：获取缓存的 segment value 值，这里和 useCache 配置有关，如果为false，则一定为空
       final Map<Cache.NamedKey, byte[]> cachedValues = computeCachedValues(perSegmentCacheKeys);
 
       perSegmentCacheKeys.forEach((segment, segmentCacheKey) -> {
@@ -526,6 +541,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
         final byte[] cachedValue = cachedValues.get(segmentCacheKey);
         if (cachedValue != null) {
           // remove cached segment from set of segments to query
+          // info：删除已经 cache 的 segment
           segments.remove(segment);
           alreadyCachedResults.add(Pair.of(segmentQueryInterval, cachedValue));
         } else if (populateCache) {
@@ -653,6 +669,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
     )
     {
       segmentsByServer.forEach((server, segmentsOfServer) -> {
+        // info：这个对象中包含有 server 信息，DirectDruidClient
         final QueryRunner serverRunner = serverView.getQueryRunner(server);
 
         if (serverRunner == null) {
@@ -661,6 +678,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
         }
 
         // Divide user-provided maxQueuedBytes by the number of servers, and limit each server to that much.
+        // info: 最终限制的是每个 server 的大小，确保总大小低于此值
         final long maxQueuedBytes = QueryContexts.getMaxQueuedBytes(query, httpClientConfig.getMaxQueuedBytes());
         final long maxQueuedBytesPerServer = maxQueuedBytes / segmentsByServer.size();
         final Sequence<T> serverResults;

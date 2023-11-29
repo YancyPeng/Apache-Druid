@@ -226,6 +226,7 @@ public class K8sDruidNodeDiscoveryProvider extends DruidNodeDiscoveryProvider
 
       while (lifecycleLock.awaitStarted(1, TimeUnit.MILLISECONDS)) {
         try {
+          // info: 轮询去获取当前最新的 pods，然后判断是否有变更来通知 listener
           DiscoveryDruidNodeList list = k8sApiClient.listPods(podInfo.getPodNamespace(), labelSelector, nodeRole);
           baseNodeRoleWatcher.resetNodes(list.getDruidNodes());
 
@@ -233,7 +234,7 @@ public class K8sDruidNodeDiscoveryProvider extends DruidNodeDiscoveryProvider
             baseNodeRoleWatcher.cacheInitialized();
             cacheInitialized = true;
           }
-
+          // info：这里还有个 watch，不清楚和上面的轮询有什么差别，之后再看
           keepWatching(
               podInfo.getPodNamespace(),
               labelSelector,

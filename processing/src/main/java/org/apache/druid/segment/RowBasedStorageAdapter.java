@@ -173,6 +173,7 @@ public class RowBasedStorageAdapter<RowType> implements StorageAdapter
         rowAdapter
     );
 
+    // info: 把 interval 切割
     final Iterable<Interval> bucketIntervals = gran.getIterable(actualInterval);
 
     return Sequences.simple(

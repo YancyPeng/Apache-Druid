@@ -79,6 +79,8 @@ public class BitmapIndexColumnPartSupplier implements Supplier<BitmapIndex>
       public int getIndex(@Nullable String value)
       {
         // GenericIndexed.indexOf satisfies contract needed by BitmapIndex.indexOf
+        // info: 这个 dictionary 中到底保存了什么？
+        // info: {"yangjun": 0, "test": 1}
         return dictionary.indexOf(value);
       }
 

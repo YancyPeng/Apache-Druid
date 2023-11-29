@@ -304,6 +304,7 @@ public class PartialDruidQuery
       final boolean finalizeAggregations
   )
   {
+    // info: 把用户的输入 sql ，转成 SQL 对象
     return DruidQuery.fromPartialQuery(
         this,
         dataSource,

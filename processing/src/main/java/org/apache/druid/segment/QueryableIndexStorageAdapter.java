@@ -285,6 +285,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
 
     final ColumnSelectorBitmapIndexSelector bitmapIndexSelector = makeBitmapIndexSelector(virtualColumns);
 
+    // info: 把 filter 按照是否可根据 bitmap 过滤分为 pre-filter 和 post-filter
     final FilterAnalysis filterAnalysis = analyzeFilter(filter, bitmapIndexSelector, queryMetrics);
 
     return Sequences.filter(
@@ -389,9 +390,11 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
     } else {
       preFilters = new ArrayList<>();
 
+      // info: AndFilter 里可以包含许多其他的 filter，AndFitler 是减法
       if (filter instanceof AndFilter) {
         // If we get an AndFilter, we can split the subfilters across both filtering stages
         for (Filter subfilter : ((AndFilter) filter).getFilters()) {
+          // info: 拆开，每个 filter 调用自己的 support 方法，而不是使用 AndFilter 自带的，自带的 filter 只要有一个 notSupport 即为 false
 
           if (subfilter.supportsBitmapIndex(indexSelector) && subfilter.shouldUseBitmapIndex(indexSelector)) {
 
@@ -402,6 +405,8 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
         }
       } else {
         // If we get an OrFilter or a single filter, handle the filter in one stage
+        // info: 为什么 OrFilter 不需要像 AndFilter 一样处理？ OrFilter 是加法
+        // info: 由于 Or 的特殊性，如果存在一个 filter 不能使用 bitmap, 其他 filter 如果还是使用 bitmap 过滤，可能会导致一部分数据（能被 unsupportBitMapFilter 匹配的）被过滤了
         if (filter.supportsBitmapIndex(indexSelector) && filter.shouldUseBitmapIndex(indexSelector)) {
           preFilters.add(filter);
         } else {
@@ -419,7 +424,9 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
             queryMetrics.makeBitmapResultFactory(indexSelector.getBitmapFactory());
         long bitmapConstructionStartNs = System.nanoTime();
         // Use AndFilter.getBitmapResult to intersect the preFilters to get its short-circuiting behavior.
+        // info: 使用 preFilter 先过滤出的 bitmap
         preFilterBitmap = AndFilter.getBitmapIndex(indexSelector, bitmapResultFactory, preFilters);
+        // info: 使用 preFilter 过滤出的行数
         preFilteredRows = preFilterBitmap.size();
         queryMetrics.reportBitmapConstructionTime(System.nanoTime() - bitmapConstructionStartNs);
       } else {

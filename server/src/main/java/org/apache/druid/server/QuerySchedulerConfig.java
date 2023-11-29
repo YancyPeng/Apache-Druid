@@ -36,6 +36,7 @@ public class QuerySchedulerConfig
 
   public int getNumThreads()
   {
+    // info: 受参数 druid.query.scheduler.numThreads	控制，当 >= druid.server.http.numThreads 时无效
     return numThreads;
   }
 

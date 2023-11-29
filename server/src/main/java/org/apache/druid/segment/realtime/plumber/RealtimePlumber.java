@@ -163,6 +163,7 @@ public class RealtimePlumber implements Plumber
     this.indexMerger = Preconditions.checkNotNull(indexMerger, "Null IndexMerger");
     this.indexIO = Preconditions.checkNotNull(indexIO, "Null IndexIO");
     this.cache = cache;
+    // info: 这里是 SinkQuerySegmentWalker
     this.texasRanger = new SinkQuerySegmentWalker(
         schema.getDataSource(),
         sinkTimeline,

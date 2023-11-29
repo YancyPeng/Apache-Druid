@@ -246,12 +246,14 @@ public class BaseNodeRoleWatcher
       List<DiscoveryDruidNode> nodesAdded = new ArrayList<>();
       List<DiscoveryDruidNode> nodesDeleted = new ArrayList<>();
 
+      // info: 判断是否有新增的
       for (Map.Entry<String, DiscoveryDruidNode> e : fullNodes.entrySet()) {
         if (!nodes.containsKey(e.getKey())) {
           nodesAdded.add(e.getValue());
         }
       }
 
+      // info: 是否有删除的
       for (Map.Entry<String, DiscoveryDruidNode> e : nodes.entrySet()) {
         if (!fullNodes.containsKey(e.getKey())) {
           nodesDeleted.add(e.getValue());

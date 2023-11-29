@@ -507,6 +507,7 @@ public class GroupByQueryQueryToolChest extends QueryToolChest<ResultRow, GroupB
       @Override
       public boolean isCacheable(GroupByQuery query, boolean willMergeRunners)
       {
+        // info: 如果是 groupV2 查询，这里的返回值为 false
         return strategySelector.strategize(query).isCacheable(willMergeRunners);
       }
 

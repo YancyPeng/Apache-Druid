@@ -158,6 +158,7 @@ public class LikeFilter implements Filter
 
   private Iterable<ImmutableBitmap> getBitmapIterable(final BitmapIndexSelector selector)
   {
+    // info: suffixMatch is MATCH_EMPTY and they start with "prefix" and contain nothing after prefix
     if (isSimpleEquals()) {
       // Verify that dimension equals prefix.
       return ImmutableList.of(
@@ -251,6 +252,7 @@ public class LikeFilter implements Filter
 
           private int findNext()
           {
+            // info: 看起来 LikeFilter 是要把 dim 列的每个值都取出来一一进行 likeMatch，如果匹配了就返回 found 值
             while (currIndex < endIndex && !likeMatcher.matchesSuffixOnly(dimValues, currIndex)) {
               currIndex++;
             }

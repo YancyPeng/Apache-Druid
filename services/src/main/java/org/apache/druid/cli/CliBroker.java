@@ -165,6 +165,7 @@ public class CliBroker extends ServerRunnable
           LifecycleModule.registerKey(binder, Key.get(SelfDiscoveryResource.class));
         },
         new LookupModule(),
+            // info: sql 的解析模块，使用 http 发送 druid/sql/v2 查询，第一步就到这里
         new SqlModule()
     );
   }

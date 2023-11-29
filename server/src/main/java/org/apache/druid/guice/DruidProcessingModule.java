@@ -126,6 +126,7 @@ public class DruidProcessingModule implements Module
   @Provides
   @LazySingleton
   @Merging
+  // info: 原来在这里
   public BlockingPool<ByteBuffer> getMergeBufferPool(DruidProcessingConfig config)
   {
     verifyDirectMemory(config);

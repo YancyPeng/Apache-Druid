@@ -159,6 +159,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
     final JavaType queryResultType = isBySegment ? toolChest.getBySegmentResultType() : toolChest.getBaseResultType();
 
     final ListenableFuture<InputStream> future;
+    // info: 发送给 broker 和 historical，使用 QueryResource 类来处理
     final String url = scheme + "://" + host + "/druid/v2/";
     final String cancelUrl = url + query.getId();
 
@@ -456,6 +457,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
         throw new QueryTimeoutException(StringUtils.nonStrictFormat("Query[%s] url[%s] timed out.", query.getId(), url));
       }
 
+      // info: 把 query 封装好发送请求
       future = httpClient.go(
           new Request(
               HttpMethod.POST,

@@ -117,8 +117,10 @@ public abstract class AbstractBufferHashGrouper<KeyType> implements Grouper<KeyT
   }
 
   @Override
+  // info: key 是 dim value, keyHash 是 value 的 hash值
   public AggregateResult aggregate(KeyType key, int keyHash)
   {
+    // info: 序列化 value 值，方便与哈希表进行比较
     final ByteBuffer keyBuffer = keySerde.toByteBuffer(key);
     if (keyBuffer == null) {
       // This may just trigger a spill and get ignored, which is ok. If it bubbles up to the user, the message will
@@ -142,13 +144,17 @@ public abstract class AbstractBufferHashGrouper<KeyType> implements Grouper<KeyT
       return Groupers.hashTableFull(0);
     }
 
+    // info: 数据行在哈希表中的偏移量
     final int bucketStartOffset = hashTable.getOffsetForBucket(bucket);
     final boolean bucketWasUsed = hashTable.isBucketUsed(bucket);
+    // info: 哈希表
     final ByteBuffer tableBuffer = hashTable.getTableBuffer();
 
     // Set up key and initialize the aggs if this is a new bucket.
     if (!bucketWasUsed) {
+      // info: 纬度值放入哈希表
       hashTable.initializeNewBucketKey(bucket, keyBuffer, keyHash);
+      // info: 聚合器初始化，如LongSumBufferAggregator执行buf.putLong(position, 0L)
       aggregators.init(tableBuffer, bucketStartOffset + baseAggregatorOffset);
       newBucketHook(bucketStartOffset);
     }
@@ -158,6 +164,7 @@ public abstract class AbstractBufferHashGrouper<KeyType> implements Grouper<KeyT
     }
 
     // Aggregate the current row.
+    // info: 聚合当前行
     aggregators.aggregateBuffered(tableBuffer, bucketStartOffset + baseAggregatorOffset);
 
     afterAggregateHook(bucketStartOffset);

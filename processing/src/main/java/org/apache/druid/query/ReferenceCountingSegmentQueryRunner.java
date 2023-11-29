@@ -46,6 +46,7 @@ public class ReferenceCountingSegmentQueryRunner<T> implements QueryRunner<T>
   {
     return segment.acquireReferences().map(closeable -> {
       try {
+        // info: 创建当前 segment 的 QueryRunner 对象，该对象中包含有 StorageAdapter
         final Sequence<T> baseSequence = factory.createRunner(segment).run(queryPlus, responseContext);
         return Sequences.withBaggage(baseSequence, closeable);
       }

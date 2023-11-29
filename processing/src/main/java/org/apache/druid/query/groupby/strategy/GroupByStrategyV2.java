@@ -103,6 +103,7 @@ public class GroupByStrategyV2 implements GroupByStrategy
       DruidProcessingConfig processingConfig,
       Supplier<GroupByQueryConfig> configSupplier,
       @Global NonBlockingPool<ByteBuffer> bufferPool,
+      // info: 默认是  Math.max(2, druid.processing.numThreads / 4)，受 druid.processing.numMergeBuffers	参数限制
       @Merging BlockingPool<ByteBuffer> mergeBufferPool,
       @Smile ObjectMapper spillMapper,
       QueryWatcher queryWatcher

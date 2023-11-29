@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.inject.Provider;
 
+// info：druid 默认的 cache 就是 Caffeine
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = CaffeineCacheProvider.class)
 @JsonSubTypes(value = {
     @JsonSubTypes.Type(name = "local", value = LocalCacheProvider.class),

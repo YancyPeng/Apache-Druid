@@ -189,9 +189,12 @@ public class CacheUtil
       final ServerType serverType
   )
   {
+    // info:  serverType.willMergeRunners() 当 serverType 为 BROKER 时会返回 false
+    // info： topN 查询时为 true
     return cacheStrategy != null
            && cacheStrategy.isCacheable(query, serverType.willMergeRunners())
            && cacheConfig.isQueryCacheable(query)
+            // info: BROKER TableSource 为 true
            && query.getDataSource().isCacheable(serverType == ServerType.BROKER);
   }
 }

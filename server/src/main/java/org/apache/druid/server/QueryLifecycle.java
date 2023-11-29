@@ -250,6 +250,8 @@ public class QueryLifecycle
 
     final ResponseContext responseContext = DirectDruidClient.makeResponseContextForQuery();
 
+    // info: 怎么 run 的？
+    // info: broker 这里是  ClientQuerySegmentWalker
     final Sequence res = QueryPlus.wrap(baseQuery)
                                   .withIdentity(authenticationResult.getIdentity())
                                   .run(texasRanger, responseContext);

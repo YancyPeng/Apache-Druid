@@ -83,13 +83,17 @@ public class ResultLevelCachingQueryRunner<T> implements QueryRunner<T>
   @Override
   public Sequence<T> run(QueryPlus queryPlus, ResponseContext responseContext)
   {
+    // info: 很难为 true
     if (useResultCache || populateResultCache) {
 
+      // info: 这个的 cacheKey 粒度是整个查询，和 CachingClusteredClient 类有些区别
       final String cacheKeyStr = StringUtils.fromUtf8(strategy.computeResultLevelCacheKey(query));
       final byte[] cachedResultSet = fetchResultsFromResultLevelCache(cacheKeyStr);
       String existingResultSetId = extractEtagFromResults(cachedResultSet);
 
       existingResultSetId = existingResultSetId == null ? "" : existingResultSetId;
+
+      // info: 给下一个 runner 查询 添加 Header
       query = query.withOverriddenContext(
           ImmutableMap.of(QueryResource.HEADER_IF_NONE_MATCH, existingResultSetId));
 
