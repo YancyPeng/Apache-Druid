@@ -220,6 +220,7 @@ class PrioritizedListenableFutureTask<V> implements RunnableFuture<V>,
   }.compound(
       new Ordering<PrioritizedListenableFutureTask>()
       {
+        // info: 如果 priority 相等，则使用该 comparator ，和 druid.processing.fifo 参数有关，为 ture 则递减，先来的大，否则统一返回 0
         @Override
         public int compare(PrioritizedListenableFutureTask left, PrioritizedListenableFutureTask right)
         {

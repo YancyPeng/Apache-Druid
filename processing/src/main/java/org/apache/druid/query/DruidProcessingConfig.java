@@ -62,6 +62,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
 
     long directSizeBytes;
     try {
+      // info: 受 -XX:MaxDirectMemorySize 参数影响，如果没设置，受 -Xmx 参数影响
       directSizeBytes = JvmUtils.getRuntimeInfo().getDirectMemorySizeBytes();
       log.info(
           "Detected max direct memory size of [%,d] bytes",
@@ -82,7 +83,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
     int totalNumBuffers = numMergeBuffers + numProcessingThreads;
     int sizePerBuffer = (int) ((double) directSizeBytes / (double) (totalNumBuffers + 1));
 
-    // info: 默认最大 1 GB
+    // info: info: druid.processing.buffer.sizeBytes , 临时可使用的堆外内存大小，默认最大 1GB
     final int computedSizePerBuffer = Math.min(sizePerBuffer, MAX_DEFAULT_PROCESSING_BUFFER_SIZE_BYTES);
     if (computedBufferSizeBytes.compareAndSet(null, computedSizePerBuffer)) {
       log.info(
@@ -145,6 +146,7 @@ public abstract class DruidProcessingConfig extends ExecutorServiceConfig implem
   }
 
   @Config(value = "${base_path}.fifo")
+  // info: druid.processing.fifo
   public boolean isFifo()
   {
     return false;

@@ -235,7 +235,7 @@ public class QueryResource implements QueryCountStatsProvider
         return Response.notModified().build();
       }
 
-      // info: 做个标记，目前看起来就是这里把 resultRow 变成了真正的值
+      // info: 做个标记，目前看起来就是这里把 resultRow 变成了真正的值，在这之前，查询都没有真正开始执行
       final Yielder<?> yielder = Yielders.each(results);
 
       try {
