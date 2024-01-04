@@ -125,6 +125,7 @@ public class CliMiddleManager extends ServerRunnable
             JsonConfigProvider.bind(binder, "druid.indexer.task", TaskConfig.class);
             JsonConfigProvider.bind(binder, "druid.worker", WorkerConfig.class);
 
+            // info: 在 MM 这里是 ForkingTaskRunner，而在 overload 那里默认是 HttpRemoteTaskRunner
             binder.bind(TaskRunner.class).to(ForkingTaskRunner.class);
             binder.bind(ForkingTaskRunner.class).in(LazySingleton.class);
 
@@ -237,6 +238,7 @@ public class CliMiddleManager extends ServerRunnable
     }
 
     Jerseys.addResource(binder, WorkerResource.class);
+    // info: 这里是接受任务的接口，接受来自 Overload 分配的任务
     Jerseys.addResource(binder, TaskManagementResource.class);
   }
 }

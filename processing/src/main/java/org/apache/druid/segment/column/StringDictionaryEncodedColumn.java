@@ -68,6 +68,7 @@ public class StringDictionaryEncodedColumn implements DictionaryEncodedColumn<St
       Indexed<ByteBuffer> dictionaryUtf8
   )
   {
+    // info: 这个 column 就是 columnData
     this.column = singleValueColumn;
     this.multiValueColumn = multiValueColumn;
     this.cachedDictionary = dictionary;
@@ -163,6 +164,7 @@ public class StringDictionaryEncodedColumn implements DictionaryEncodedColumn<St
       @Override
       public String lookupName(int id)
       {
+        // info: 这里把对应的 {0，1，2，3} 根据字典的 mapping 关系转成 String
         final String value = StringDictionaryEncodedColumn.this.lookupName(id);
         return extractionFn == null ? value : extractionFn.apply(value);
       }
@@ -199,6 +201,7 @@ public class StringDictionaryEncodedColumn implements DictionaryEncodedColumn<St
         if (extractionFn != null) {
           throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
         }
+        // info: 这里是把 value 转成对应的 id
         return StringDictionaryEncodedColumn.this.lookupId(name);
       }
     }
@@ -349,6 +352,22 @@ public class StringDictionaryEncodedColumn implements DictionaryEncodedColumn<St
         @Override
         public Object getObject()
         {
+          // info: 1.根据 column data 获取对应于 dictionary 的 id
+          /**
+           * List of column data
+           *    [0,
+           *    0,
+           *    1,
+           *    1]
+           */
+          // info：2.根据 id 获取真实的 value
+          /**
+           * Dictionary
+           *    {
+           *     "Justin Bieber": 0,
+           *     "Ke$ha":         1
+           *    }
+           */
           return lookupName(getRowValue());
         }
 

@@ -70,6 +70,7 @@ public class BlockLayoutColumnarLongsSupplier implements Supplier<ColumnarLongs>
           public long get(int index)
           {
             // optimize division and remainder for powers of 2
+            // info: 在这里获取 Long 类型的数据
             final int bufferNum = index >> div;
 
             if (bufferNum != currBufferNum) {

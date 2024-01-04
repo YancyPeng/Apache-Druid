@@ -75,7 +75,7 @@ public class HiLoQueryLaningStrategy implements QueryLaningStrategy
       priority = QueryContexts.getPriority(theQuery);
     }
     final String lane = theQuery.getContextValue(QueryContexts.LANE_KEY);
-    // info: 如果 lane 不为空，且 priority < 0 ，就设置成 low
+    // info: 如果 lane 为空，且 priority < 0 ，就设置成 low，意味着可以手动设置不为 low
     if (lane == null && priority != null && priority < 0) {
       return Optional.of(LOW);
     }

@@ -242,7 +242,9 @@ public class CliOverlord extends ServerRunnable
                     .in(LazySingleton.class);
             }
 
+            // info: 批式处理
             Jerseys.addResource(binder, OverlordResource.class);
+            // info: 流式处理
             Jerseys.addResource(binder, SupervisorResource.class);
             Jerseys.addResource(binder, HttpRemoteTaskRunnerResource.class);
 
@@ -309,6 +311,7 @@ public class CliOverlord extends ServerRunnable
                  .in(LazySingleton.class);
             binder.bind(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
 
+            // info: 默认是这个
             biddy.addBinding(HttpRemoteTaskRunnerFactory.TYPE_NAME)
                  .to(HttpRemoteTaskRunnerFactory.class)
                  .in(LazySingleton.class);

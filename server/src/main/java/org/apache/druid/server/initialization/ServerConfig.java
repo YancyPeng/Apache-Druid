@@ -103,6 +103,7 @@ public class ServerConfig
 
   @JsonProperty
   @Min(0)
+  // info: 受参数 druid.server.http.defaultQueryTimeout	影响
   private long defaultQueryTimeout = TimeUnit.MINUTES.toMillis(5);
 
   @JsonProperty

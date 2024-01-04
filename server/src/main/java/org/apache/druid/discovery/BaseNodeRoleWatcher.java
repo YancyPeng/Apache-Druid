@@ -142,6 +142,7 @@ public class BaseNodeRoleWatcher
       // No need to wait on CountDownLatch, because we are holding the lock under which it could only be counted down.
       if (cacheInitialized.getCount() == 0) {
         List<DiscoveryDruidNode> newNode = ImmutableList.of(druidNode);
+        // info: 遍历调用所有的 listener
         for (DruidNodeDiscovery.Listener listener : nodeListeners) {
           safeSchedule(
               () -> listener.nodesAdded(newNode),

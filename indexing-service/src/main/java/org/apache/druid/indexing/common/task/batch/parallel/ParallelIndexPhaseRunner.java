@@ -110,6 +110,7 @@ public abstract class ParallelIndexPhaseRunner<SubTaskType extends Task, SubTask
   @Override
   public TaskState run() throws Exception
   {
+    // info: 根据分割规范，进行拆分，并行执行
     final CountingSubTaskSpecIterator subTaskSpecIterator = new CountingSubTaskSpecIterator(subTaskSpecIterator());
     if (!subTaskSpecIterator.hasNext()) {
       LOG.warn("There's no input split to process");

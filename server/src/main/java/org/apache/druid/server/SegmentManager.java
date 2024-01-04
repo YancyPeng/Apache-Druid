@@ -227,6 +227,7 @@ public class SegmentManager
           final DataSourceState dataSourceState = v == null ? new DataSourceState() : v;
           final VersionedIntervalTimeline<String, ReferenceCountingSegment> loadedIntervals =
               dataSourceState.getTimeline();
+
           final PartitionChunk<ReferenceCountingSegment> entry = loadedIntervals.findChunk(
               segment.getInterval(),
               segment.getVersion(),
@@ -248,6 +249,7 @@ public class SegmentManager
             } else if (dataSourceState.tablesLookup.size() > 0) {
               log.error("Cannot load segment[%s] without IndexedTable, all existing segments are joinable", segment.getId());
             }
+            // info: 在这里对 timeLine 进行填充，会在 ServerManager 的查询中用到
             loadedIntervals.add(
                 segment.getInterval(),
                 segment.getVersion(),

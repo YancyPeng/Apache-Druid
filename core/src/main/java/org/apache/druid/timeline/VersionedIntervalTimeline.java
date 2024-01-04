@@ -286,6 +286,7 @@ public class VersionedIntervalTimeline<VersionType, ObjectType extends Overshado
 
   @Override
   @Nullable
+  // info: chunk 就是 segmentGranularity 配置， 1 个 chunk 文件可能包含一个或者多个 segment（和其他配置有关， tunningConfig）
   public PartitionChunk<ObjectType> findChunk(Interval interval, VersionType version, int partitionNum)
   {
     lock.readLock().lock();

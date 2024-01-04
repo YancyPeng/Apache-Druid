@@ -78,6 +78,7 @@ class PartialHashSegmentGenerateParallelIndexTaskRunner
       @Override
       public PartialHashSegmentGenerateTask newSubTask(int numAttempts)
       {
+        // info: partial_index_generate
         return new PartialHashSegmentGenerateTask(
             null,
             groupId,

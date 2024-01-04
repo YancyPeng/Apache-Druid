@@ -94,6 +94,7 @@ class PartialGenericSegmentMergeParallelIndexTaskRunner
       @Override
       public PartialGenericSegmentMergeTask newSubTask(int numAttempts)
       {
+        // info: partial_index_generic_merge
         return new PartialGenericSegmentMergeTask(
             null,
             getGroupId(),

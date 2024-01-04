@@ -109,6 +109,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
+// info: 批量摄取
 @Path("/druid/indexer/v1")
 public class OverlordResource
 {

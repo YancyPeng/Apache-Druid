@@ -57,6 +57,7 @@ public class InputSourceProcessor
    *
    * @return {@link SegmentsAndCommitMetadata} for the pushed segments.
    */
+  // info: 真正切割的地方
   public static SegmentsAndCommitMetadata process(
       DataSchema dataSchema,
       BatchAppenderatorDriver driver,
@@ -104,6 +105,7 @@ public class InputSourceProcessor
         final Interval interval = optInterval.get();
 
         final String sequenceName = sequenceNameFunction.getSequenceName(interval, inputRow);
+
         final AppenderatorDriverAddResult addResult = driver.add(inputRow, sequenceName);
 
         if (addResult.isOk()) {

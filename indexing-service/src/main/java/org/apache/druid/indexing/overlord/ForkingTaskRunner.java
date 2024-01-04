@@ -86,6 +86,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Runs tasks in separate processes using the "internal peon" verb.
  */
+// info: 用在 MM 进程中
 public class ForkingTaskRunner
     extends BaseRestorableTaskRunner<ForkingTaskRunner.ForkingTaskRunnerWorkItem>
     implements TaskLogStreamer
@@ -121,6 +122,7 @@ public class ForkingTaskRunner
     this.node = node;
     this.portFinder = new PortFinder(config.getStartPort(), config.getEndPort(), config.getPorts());
     this.startupLoggingConfig = startupLoggingConfig;
+    // info: 可以同时启动的子进程（index_parallel）数量和参数 druid.worker.capacity 有关
     this.exec = MoreExecutors.listeningDecorator(
         Execs.multiThreaded(workerConfig.getCapacity(), "forking-task-runner-%d")
     );
@@ -201,6 +203,7 @@ public class ForkingTaskRunner
                           taskClasspath = config.getClasspath();
                         }
 
+                        // info: 这里好像又在设置 JVM 参数？
                         command.add(config.getJavaCommand());
                         command.add("-cp");
                         command.add(taskClasspath);
@@ -348,6 +351,8 @@ public class ForkingTaskRunner
                             "Running command: %s",
                             getMaskedCommand(startupLoggingConfig.getMaskProperties(), command)
                         );
+                        // info: 所以一个 index_parallel 任务会起一个 peon 子进程，但是 peon 子进程据说是和 MM 在同一个主机上运行的，而且是 MM 孕育出来的
+                        // info: 这个参数具体是什么？进程启动后执行的方法是什么？如果具体执行的 task ？
                         taskWorkItem.processHolder = runTaskProcess(command, logFile, taskLocation);
 
                         processHolder = taskWorkItem.processHolder;

@@ -67,6 +67,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Runs a single task in a JVM thread using an ExecutorService.
  */
+// info: 用在 Peon 进程中
 public class SingleTaskBackgroundRunner implements TaskRunner, QuerySegmentWalker
 {
   private static final EmittingLogger log = new EmittingLogger(SingleTaskBackgroundRunner.class);
@@ -468,6 +469,7 @@ public class SingleTaskBackgroundRunner implements TaskRunner, QuerySegmentWalke
             location
         );
         TaskRunnerUtils.notifyStatusChanged(listeners, task.getId(), TaskStatus.running(task.getId()));
+        // info: 最终是在这里执行了 ParallelIndexSupervisorTask 类的 runTask() 方法
         status = task.run(toolbox);
       }
       catch (InterruptedException e) {

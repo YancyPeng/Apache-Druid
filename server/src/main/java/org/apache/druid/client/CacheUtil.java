@@ -109,6 +109,7 @@ public class CacheUtil
   )
   {
     return isQueryCacheable(query, cacheStrategy, cacheConfig, serverType)
+            // info: 必须在 broker 的配置项中 druid.broker.cache.useCache 就为 true 才行
            && QueryContexts.isUseCache(query)
            && cacheConfig.isUseCache();
   }
@@ -150,6 +151,7 @@ public class CacheUtil
   {
     return isQueryCacheable(query, cacheStrategy, cacheConfig, serverType)
            && QueryContexts.isUseResultLevelCache(query)
+            // info: 必须在 broker 的配置项中 druid.broker.cache.useResultLevelCache 就为 true 才行
            && cacheConfig.isUseResultLevelCache();
   }
 
@@ -190,7 +192,7 @@ public class CacheUtil
   )
   {
     // info:  serverType.willMergeRunners() 当 serverType 为 BROKER 时会返回 false
-    // info： topN 查询时为 true
+    // info： topN/TimeSeries 查询时为 true
     return cacheStrategy != null
            && cacheStrategy.isCacheable(query, serverType.willMergeRunners())
            && cacheConfig.isQueryCacheable(query)

@@ -400,6 +400,7 @@ public class HttpRemoteTaskRunner implements WorkerTaskRunner, TaskLogStreamer
 
     log.info("Asking Worker[%s] to run task[%s]", workerHost, taskId);
 
+    // info: 在这里通过 HTTP 发送请求给 MM
     if (workerHolder.assignTask(workItem.getTask())) {
       // Don't assign new tasks until the task we just assigned is actually running
       // on a worker - this avoids overflowing a worker with tasks
@@ -1090,6 +1091,7 @@ public class HttpRemoteTaskRunner implements WorkerTaskRunner, TaskLogStreamer
   {
     Preconditions.checkState(lifecycleLock.awaitStarted(1, TimeUnit.MILLISECONDS), "not started");
 
+    // info: 通过这个锁来保证线程安全
     synchronized (statusLock) {
       HttpRemoteTaskRunnerWorkItem existing = tasks.get(task.getId());
 
@@ -1111,7 +1113,9 @@ public class HttpRemoteTaskRunner implements WorkerTaskRunner, TaskLogStreamer
             task.getType(),
             HttpRemoteTaskRunnerWorkItem.State.PENDING
         );
+        // info: 把 task 放入了map
         tasks.put(task.getId(), taskRunnerWorkItem);
+        // info: 加入 pendingTaskList
         pendingTaskIds.add(task.getId());
 
         statusLock.notifyAll();
@@ -1154,6 +1158,7 @@ public class HttpRemoteTaskRunner implements WorkerTaskRunner, TaskLogStreamer
         HttpRemoteTaskRunnerWorkItem taskItem = null;
         ImmutableWorkerInfo immutableWorker = null;
 
+        // info: 通过这个锁来保证线程安全
         synchronized (statusLock) {
           Iterator<String> iter = pendingTaskIds.iterator();
           while (iter.hasNext()) {
@@ -1245,6 +1250,7 @@ public class HttpRemoteTaskRunner implements WorkerTaskRunner, TaskLogStreamer
 
         try {
           // this will send HTTP request to worker for assigning task
+          // info: 在这里发送请求给 MM
           if (!runTaskOnWorker(taskItem, immutableWorker.getWorker().getHost())) {
             if (taskItem.getState() == HttpRemoteTaskRunnerWorkItem.State.PENDING_WORKER_ASSIGN) {
               taskItem.revertStateFromPendingWorkerAssignToPending();

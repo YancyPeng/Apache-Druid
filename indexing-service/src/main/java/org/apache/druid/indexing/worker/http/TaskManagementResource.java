@@ -198,6 +198,7 @@ public class TaskManagementResource
     return null;
   }
 
+  // info: 接收 Overload 发送过来的 task
   @POST
   @Path("/assignTask")
   @Consumes({MediaType.APPLICATION_JSON, SmileMediaTypes.APPLICATION_JACKSON_SMILE})

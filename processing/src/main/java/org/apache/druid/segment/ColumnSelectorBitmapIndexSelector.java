@@ -292,7 +292,7 @@ public class ColumnSelectorBitmapIndexSelector implements BitmapIndexSelector
 
     final BitmapIndex bitmapIndex = columnHolder.getBitmapIndex();
     // info: bitmapIndex.getIndex(value) 获取具体 value 对应的索引，比如 <"yangjun", 0>  <"test", 1>
-    // info: bitmapIndex.getBitmap(index) 再根据 index 找到当前列中符合条件的所有行
+    // info: bitmapIndex.getBitmap(index) 再根据 index 找到 value 对应的 columnData
     return bitmapIndex.getBitmap(bitmapIndex.getIndex(value));
   }
 

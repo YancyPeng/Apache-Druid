@@ -64,6 +64,7 @@ public class SegmentLocalCacheLoader implements SegmentLoader
       factory = new MMappedQueryableSegmentizerFactory(indexIO);
     }
 
+    // info: 生成了 baseSegment，里面读取了 segment 文件，包含 dictionary，bitmaps，column data
     Segment segmentObject = factory.factorize(segment, segmentFiles, lazy, loadFailed);
     return ReferenceCountingSegment.wrapSegment(segmentObject, segment.getShardSpec());
   }

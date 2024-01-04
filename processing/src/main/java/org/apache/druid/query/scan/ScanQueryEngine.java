@@ -131,6 +131,7 @@ public class ScanQueryEngine
                     intervals.get(0),
                     query.getVirtualColumns(),
                     Granularities.ALL,
+                    // info: scan query 默认就是 desc
                     query.getOrder().equals(ScanQuery.Order.DESCENDING) ||
                     (query.getOrder().equals(ScanQuery.Order.NONE) && query.isDescending()),
                     null
@@ -223,8 +224,10 @@ public class ScanQueryEngine
                             for (; !cursor.isDone() && offset < iterLimit; cursor.advance(), offset++) {
                               final Map<String, Object> theEvent = new LinkedHashMap<>();
                               for (int j = 0; j < allColumns.size(); j++) {
+                                // info: 一个map就是一行
                                 theEvent.put(allColumns.get(j), getColumnValue(j));
                               }
+                              // info: events 这个 List 就是总的返回数据
                               events.add(theEvent);
                             }
                             return events;

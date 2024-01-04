@@ -453,6 +453,7 @@ public class DirectDruidClient<T> implements QueryRunner<T>
 
       long timeLeft = timeoutAt - System.currentTimeMillis();
 
+      // info: 判断查询是否超时，默认超时时间是 5min
       if (timeLeft <= 0) {
         throw new QueryTimeoutException(StringUtils.nonStrictFormat("Query[%s] url[%s] timed out.", query.getId(), url));
       }
@@ -476,9 +477,11 @@ public class DirectDruidClient<T> implements QueryRunner<T>
       openConnections.getAndIncrement();
       Futures.addCallback(
           future,
+          // info: 添加回调函数，没有什么特别的
           new FutureCallback<InputStream>()
           {
             @Override
+            // info: 减去连接数
             public void onSuccess(InputStream result)
             {
               openConnections.getAndDecrement();

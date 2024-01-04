@@ -96,6 +96,7 @@ public class QueryableIndexCursorSequenceBuilder
   {
     final Offset baseOffset;
 
+    // info: 所有的 prefixFilter 只是为了得到一个 baseOffset
     if (filterBitmap == null) {
       baseOffset = descending
                    ? new SimpleDescendingOffset(index.getNumRows())
@@ -112,7 +113,7 @@ public class QueryableIndexCursorSequenceBuilder
     final Closer closer = Closer.create();
     closer.register(timestamps);
 
-    // info: 根据 granularity 来将 interval 切割，进行分组查询
+    // info: 根据 granularity 来将 interval 切割，进行分组查询，应该是和 queryGranularity 有关，分割的是 segmentGranularity
     Iterable<Interval> iterable = gran.getIterable(interval);
     if (descending) {
       iterable = Lists.reverse(ImmutableList.copyOf(iterable));

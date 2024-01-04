@@ -31,8 +31,10 @@ public class ColumnBuilder
 {
   private final ColumnCapabilitiesImpl capabilitiesBuilder = ColumnCapabilitiesImpl.createDefault();
 
+  // info：这里面是 dictionary 对应的 column data
   @Nullable
   private Supplier<? extends BaseColumn> columnSupplier = null;
+  // info: 这里面包含 dictionary 和 对应的bitmaps
   @Nullable
   private Supplier<BitmapIndex> bitmapIndex = null;
   @Nullable

@@ -283,6 +283,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
       return Sequences.empty();
     }
 
+    // info: 这个 selector 中就包含了 index 对象
     final ColumnSelectorBitmapIndexSelector bitmapIndexSelector = makeBitmapIndexSelector(virtualColumns);
 
     // info: 把 filter 按照是否可根据 bitmap 过滤分为 pre-filter 和 post-filter
@@ -407,6 +408,7 @@ public class QueryableIndexStorageAdapter implements StorageAdapter
         // If we get an OrFilter or a single filter, handle the filter in one stage
         // info: 为什么 OrFilter 不需要像 AndFilter 一样处理？ OrFilter 是加法
         // info: 由于 Or 的特殊性，如果存在一个 filter 不能使用 bitmap, 其他 filter 如果还是使用 bitmap 过滤，可能会导致一部分数据（能被 unsupportBitMapFilter 匹配的）被过滤了
+        // info: postFilter 是在 preFilter 过滤后的数据上再进行过滤
         if (filter.supportsBitmapIndex(indexSelector) && filter.shouldUseBitmapIndex(indexSelector)) {
           preFilters.add(filter);
         } else {

@@ -49,6 +49,7 @@ public abstract class AbstractIndex
     List<String> columnNames = new ArrayList<>();
     columnNames.add(ColumnHolder.TIME_COLUMN_NAME);
     columnNames.addAll(getColumnNames());
+    // info: 打印出当前 segment 下符合条件的所有数据
     for (Cursor cursor : cursors) {
       ColumnSelectorFactory columnSelectorFactory = cursor.getColumnSelectorFactory();
       List<ColumnValueSelector> selectors =

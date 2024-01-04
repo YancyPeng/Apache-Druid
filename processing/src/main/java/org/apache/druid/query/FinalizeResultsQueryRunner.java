@@ -106,6 +106,7 @@ public class FinalizeResultsQueryRunner<T> implements QueryRunner<T>
     }
 
     //noinspection unchecked (Technically unsound, but see class-level javadoc for rationale)
+    // info：这里也包装了一层 mapped
     return (Sequence<T>) Sequences.map(
         baseRunner.run(queryPlus.withQuery(queryToRun), responseContext),
         finalizerFn

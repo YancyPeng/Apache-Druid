@@ -202,6 +202,7 @@ public class CuratorDruidNodeDiscoveryProvider extends DruidNodeDiscoveryProvide
           .make(curatorFramework, ZKPaths.makePath(basePath, nodeRole.toString()));
 
       try {
+        // info: 这里就是 curator 中使用 cache 为 path 添加 listener 的写法
         cache.getListenable().addListener((client, event) -> handleChildEvent(event));
         cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
       }
@@ -268,6 +269,7 @@ public class CuratorDruidNodeDiscoveryProvider extends DruidNodeDiscoveryProvide
         return;
       }
 
+      // info: 这里会触发 listener
       baseNodeRoleWatcher.childAdded(jsonMapper.readValue(data, DiscoveryDruidNode.class));
     }
 

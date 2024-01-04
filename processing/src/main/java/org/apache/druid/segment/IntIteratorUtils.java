@@ -103,6 +103,7 @@ public final class IntIteratorUtils
 
     private static int iterIndex(long queueElement)
     {
+      // info: 妙啊，int 是 32位的，这里直接就取了低 32 位，其实就是 index 值
       return (int) queueElement;
     }
 

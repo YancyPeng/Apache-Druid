@@ -46,6 +46,8 @@ public class MMappedQueryableSegmentizerFactory implements SegmentizerFactory
   public Segment factorize(DataSegment dataSegment, File parentDir, boolean lazy, SegmentLazyLoadFailCallback loadFailed) throws SegmentLoadingException
   {
     try {
+      // info: 在这里 index 的时候把 smoosh 文件也读取了，这里面没有每个 column 的详细数据
+      // info: 问：这里读的是 localCache，localCache 不可能缓存所有数据，如果数据没有被缓存是在哪里加载的？那么有没有地方读取的是 HDFS，在哪里读的？
       return new QueryableIndexSegment(indexIO.loadIndex(parentDir, lazy, loadFailed), dataSegment.getId());
     }
     catch (IOException e) {

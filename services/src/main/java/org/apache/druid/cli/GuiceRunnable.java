@@ -112,6 +112,7 @@ public abstract class GuiceRunnable implements Runnable
       }
 
       try {
+        // info: 在这里启动 task 读取
         lifecycle.start();
       }
       catch (Throwable t) {

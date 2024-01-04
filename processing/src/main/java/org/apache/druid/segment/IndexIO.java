@@ -185,6 +185,7 @@ public class IndexIO
     return loadIndex(inDir, false, SegmentLazyLoadFailCallback.NOOP);
   }
 
+  // info: load 索引
   public QueryableIndex loadIndex(File inDir, boolean lazy, SegmentLazyLoadFailCallback loadFailed) throws IOException
   {
     final int version = SegmentUtils.getVersionFromDir(inDir);
@@ -527,6 +528,7 @@ public class IndexIO
       this.columnConfig = columnConfig;
     }
 
+    // info: 生成 index 文件，这里会读取 smoosh 文件
     @Override
     public QueryableIndex load(File inDir, ObjectMapper mapper, boolean lazy, SegmentLazyLoadFailCallback loadFailed) throws IOException
     {
@@ -563,6 +565,7 @@ public class IndexIO
        * index to use. Since we cannot very cleanly build v9 segments directly, we are using a workaround where
        * this information is appended to the end of index.drd.
        */
+      // info：判断 position 和 limit 之间是否有其他任何元素
       if (indexBuffer.hasRemaining()) {
         segmentBitmapSerdeFactory = mapper.readValue(SERIALIZER_UTILS.readString(indexBuffer), BitmapSerdeFactory.class);
       } else {
@@ -591,6 +594,7 @@ public class IndexIO
       Map<String, Supplier<ColumnHolder>> columns = new HashMap<>();
 
       for (String columnName : cols) {
+        // info：遍历解析每一个列
         if (Strings.isNullOrEmpty(columnName)) {
           log.warn("Null or Empty Dimension found in the file : " + inDir);
           continue;

@@ -85,6 +85,7 @@ public class CliRouter extends ServerRunnable
         new JettyHttpClientModule("druid.router.http", Router.class),
         JettyHttpClientModule.global(),
         binder -> {
+            //info： 8888 是 router 的端口
           binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/router");
           binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8888);
           binder.bindConstant().annotatedWith(Names.named("tlsServicePort")).to(9088);
@@ -104,6 +105,8 @@ public class CliRouter extends ServerRunnable
                 .toProvider(TieredBrokerSelectorStrategiesProvider.class)
                 .in(LazySingleton.class);
 
+          // info: 这个 servlet 的 path 在那里配置？
+            // info：在 RouterJettyServerInitializer 类中
           binder.bind(QueryCountStatsProvider.class).to(AsyncQueryForwardingServlet.class).in(LazySingleton.class);
           binder.bind(JettyServerInitializer.class).to(RouterJettyServerInitializer.class).in(LazySingleton.class);
 

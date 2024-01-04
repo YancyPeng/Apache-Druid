@@ -304,6 +304,7 @@ public class DictionaryEncodedColumnPartSerde implements ColumnPartSerde
         final boolean hasMultipleValues = Feature.MULTI_VALUE.isSet(rFlags) || Feature.MULTI_VALUE_V3.isSet(rFlags);
 
         // Duplicate the first buffer since we are reading the dictionary twice.
+        // info: 这里是每个列可取值的 dictionary
         final GenericIndexed<String> rDictionary = GenericIndexed.read(
             buffer.duplicate(),
             GenericIndexed.STRING_STRATEGY,
@@ -318,6 +319,7 @@ public class DictionaryEncodedColumnPartSerde implements ColumnPartSerde
 
         builder.setType(ValueType.STRING);
 
+        // info: 每个列与 dictionary 对应的 column data
         final WritableSupplier<ColumnarInts> rSingleValuedColumn;
         final WritableSupplier<ColumnarMultiInts> rMultiValuedColumn;
 
@@ -344,6 +346,7 @@ public class DictionaryEncodedColumnPartSerde implements ColumnPartSerde
             .setDictionaryEncodedColumnSupplier(dictionaryEncodedColumnSupplier);
 
         if (!Feature.NO_BITMAP_INDEX.isSet(rFlags)) {
+          // info: dictionary 中每个值对应的索引
           GenericIndexed<ImmutableBitmap> rBitmaps = GenericIndexed.read(
               buffer,
               bitmapSerdeFactory.getObjectStrategy(),

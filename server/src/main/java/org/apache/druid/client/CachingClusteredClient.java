@@ -668,6 +668,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
         final SortedMap<DruidServer, List<SegmentDescriptor>> segmentsByServer
     )
     {
+      // info：每个 server 发一条
       segmentsByServer.forEach((server, segmentsOfServer) -> {
         // info：这个对象中包含有 server 信息，DirectDruidClient
         final QueryRunner serverRunner = serverView.getQueryRunner(server);
@@ -678,7 +679,7 @@ public class CachingClusteredClient implements QuerySegmentWalker
         }
 
         // Divide user-provided maxQueuedBytes by the number of servers, and limit each server to that much.
-        // info: 最终限制的是每个 server 的大小，确保总大小低于此值
+        // info: 最终限制的是每个 historical/ clieon 的大小，确保总大小低于此值，和参数 druid.broker.http.maxQueuedBytes 有关
         final long maxQueuedBytes = QueryContexts.getMaxQueuedBytes(query, httpClientConfig.getMaxQueuedBytes());
         final long maxQueuedBytesPerServer = maxQueuedBytes / segmentsByServer.size();
         final Sequence<T> serverResults;

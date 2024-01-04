@@ -766,6 +766,7 @@ public class DruidQuery
       return groupByQuery;
     }
 
+    // info: 普通的 select * 查询
     final ScanQuery scanQuery = toScanQuery();
     if (scanQuery != null) {
       return scanQuery;

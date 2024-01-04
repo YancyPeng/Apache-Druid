@@ -57,7 +57,10 @@ public class TieredBrokerHostSelector
   private static EmittingLogger log = new EmittingLogger(TieredBrokerHostSelector.class);
 
   private final CoordinatorRuleManager ruleManager;
+  // info: 这个在哪里填充的数据？
+  // info: 在这个类中有默认配置，也受限于 druid.router.xx
   private final TieredBrokerConfig tierConfig;
+
   private final List<TieredBrokerSelectorStrategy> strategies;
 
   // brokerService -> broker-nodes-holder
@@ -130,6 +133,7 @@ public class TieredBrokerHostSelector
       }
 
       DruidNodeDiscovery druidNodeDiscovery = druidNodeDiscoveryProvider.getForNodeRole(NodeRole.BROKER);
+      // info: 这里有个 listener，更新集群的 server 信息，这里用的是 curator
       druidNodeDiscovery.registerListener(
           new DruidNodeDiscovery.Listener()
           {

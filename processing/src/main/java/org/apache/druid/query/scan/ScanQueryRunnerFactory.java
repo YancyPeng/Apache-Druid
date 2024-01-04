@@ -98,9 +98,11 @@ public class ScanQueryRunnerFactory implements QueryRunnerFactory<ScanResultValu
 
       if (query.getOrder().equals(ScanQuery.Order.NONE)) {
         // Use normal strategy
+        // info: 这里包了两层，ConcatSequence -> MappedSequence
         Sequence<ScanResultValue> returnedRows = Sequences.concat(
             Sequences.map(
                 Sequences.simple(queryRunners),
+                // info: 这个 input 就是 queryRunner，queryPlus 和 responseContext 两个参数都是一样的，是在 QueryLifeCycle 那里就传进来的，所以全靠 queryRunner 自己的内部参数来区分，其实只有 segment 不一样
                 input -> input.run(queryPlus, responseContext)
             )
         );

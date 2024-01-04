@@ -226,6 +226,7 @@ public class WorkerHolder
       return false;
     }
 
+    // info: 分配任务的 url
     URL url = TaskRunnerUtils.makeWorkerURL(worker, "/druid-internal/v1/worker/assignTask");
     int numTries = config.getAssignRequestMaxRetries();
 
@@ -233,6 +234,7 @@ public class WorkerHolder
       return RetryUtils.retry(
           () -> {
             try {
+              // info: 真正发送请求的地方
               final StatusResponseHolder response = httpClient.go(
                   new Request(HttpMethod.POST, url)
                       .addHeader(HttpHeaders.Names.CONTENT_TYPE, SmileMediaTypes.APPLICATION_JACKSON_SMILE)

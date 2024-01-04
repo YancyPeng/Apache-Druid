@@ -210,6 +210,8 @@ public class SegmentLoadDropHandler implements DataSegmentChangeHandler
     return started;
   }
 
+  // info: load segment Cache from local file
+  // info: path=>/Users/yangjun.peng/opt/apache-druid-0.22.1/var/druid/segments/yangjun_1130_test/2015-09-12T00:00:00.000Z_2015-09-12T01:00:00.000Z/2023-11-30T10:49:47.669Z/0/index.zip
   private void loadLocalCache()
   {
     final long start = System.currentTimeMillis();

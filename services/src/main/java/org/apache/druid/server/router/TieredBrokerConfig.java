@@ -32,6 +32,7 @@ import java.util.List;
 
 /**
  */
+// info: 受限于 druid.router 配置
 public class TieredBrokerConfig
 {
   public static final String DEFAULT_COORDINATOR_SERVICE_NAME = "druid/coordinator";
@@ -43,6 +44,7 @@ public class TieredBrokerConfig
   private String defaultBrokerServiceName = DEFAULT_BROKER_SERVICE_NAME;
 
   @JsonProperty
+  // info: {"_default_tier": "druid/broker"}
   private LinkedHashMap<String, String> tierToBrokerMap;
 
   @JsonProperty
@@ -64,6 +66,7 @@ public class TieredBrokerConfig
   public LinkedHashMap<String, String> getTierToBrokerMap()
   {
     return tierToBrokerMap == null ? new LinkedHashMap<>(
+            // info: 在这里设置的 default 值
         ImmutableMap.of(
             DruidServer.DEFAULT_TIER, defaultBrokerServiceName
         )

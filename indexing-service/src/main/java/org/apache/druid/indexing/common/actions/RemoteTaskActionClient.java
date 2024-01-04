@@ -79,6 +79,7 @@ public class RemoteTaskActionClient implements TaskActionClient
             jsonMapper.writeValueAsString(taskAction)
         );
 
+        // info：这里是干什么？
         fullResponseHolder = druidLeaderClient.go(
             druidLeaderClient.makeRequest(HttpMethod.POST, "/druid/indexer/v1/action")
                              .setContent(MediaType.APPLICATION_JSON, dataToSend)

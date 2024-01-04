@@ -495,6 +495,7 @@ public class StringDimensionMergerV9 implements DimensionMergerV9
     // Merge is needed, because some compacting MutableBitmap implementations are very inefficient when bits are
     // added not in the ascending order.
     int prevRow = IndexMerger.INVALID_ROW;
+    // info: 合并了 iterator，多个 iterator 是如何合并的？
     for (IntIterator mergeIt = IntIteratorUtils.mergeAscending(convertedInvertedIndexesIterators);
          mergeIt.hasNext(); ) {
       int row = mergeIt.nextInt();

@@ -32,9 +32,11 @@ import javax.annotation.Nullable;
 class SimpleColumnHolder implements ColumnHolder
 {
   private final ColumnCapabilities capabilities;
-  // info: md终于找到你
+  // info: 对String 来说这里是 dictionary 和 valueColumn
+  // info: 对 int 和 Long 来说，这里是压缩后的数字
   private final Supplier<? extends BaseColumn> columnSupplier;
   @Nullable
+  // info：这里是 bitmaps 和 dictionary
   private final Supplier<BitmapIndex> bitmapIndex;
   @Nullable
   private final Supplier<SpatialIndex> spatialIndex;

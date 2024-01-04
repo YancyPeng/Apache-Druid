@@ -55,7 +55,6 @@ public class QueryLifecycleFactory
   )
   {
     this.warehouse = warehouse;
-    // info: ClientQuerySegmentWalker
     this.texasRanger = texasRanger;
     this.queryMetricsFactory = queryMetricsFactory;
     this.emitter = emitter;

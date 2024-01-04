@@ -252,6 +252,7 @@ public class QueryLifecycle
 
     // info: 怎么 run 的？
     // info: broker 这里是  ClientQuerySegmentWalker
+    // info: historical 这里是 ServerManager
     final Sequence res = QueryPlus.wrap(baseQuery)
                                   .withIdentity(authenticationResult.getIdentity())
                                   .run(texasRanger, responseContext);

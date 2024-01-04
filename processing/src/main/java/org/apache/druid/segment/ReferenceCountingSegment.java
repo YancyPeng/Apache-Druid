@@ -116,6 +116,7 @@ public class ReferenceCountingSegment extends ReferenceCountingCloseableObject<S
   @Nullable
   public StorageAdapter asStorageAdapter()
   {
+    // info: baseObject 是 QueryableIndexSegment
     return !isClosed() ? baseObject.asStorageAdapter() : null;
   }
 

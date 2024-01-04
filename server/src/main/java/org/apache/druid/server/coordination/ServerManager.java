@@ -118,6 +118,7 @@ public class ServerManager implements QuerySegmentWalker
     this.objectMapper = objectMapper;
 
     this.cacheConfig = cacheConfig;
+    // info: 这个 segmentManager 是依赖进来的，其会在启动时读取 segment 文件
     this.segmentManager = segmentManager;
     this.joinableFactoryWrapper = new JoinableFactoryWrapper(joinableFactory);
     this.serverConfig = serverConfig;
@@ -180,6 +181,7 @@ public class ServerManager implements QuerySegmentWalker
       throw e;
     }
 
+    // info: 这个工具箱中包含有 cacheStrategy 和 mergeResult 等关键逻辑
     final QueryToolChest<T, Query<T>> toolChest = factory.getToolchest();
 
     final DataSourceAnalysis analysis = DataSourceAnalysis.forDataSource(query.getDataSource());
@@ -216,7 +218,7 @@ public class ServerManager implements QuerySegmentWalker
     final FunctionalIterable<QueryRunner<T>> queryRunners = FunctionalIterable
         .create(specs)
         .transformCat(
-                // info: 每个 segment 都拆开单独执行
+                // info: 每个 segment 都拆开单独执行，和 摄入时的 segmentGranularity 配置有关
             descriptor -> Collections.singletonList(
                 buildQueryRunnerForSegment(
                     query,
@@ -233,7 +235,7 @@ public class ServerManager implements QuerySegmentWalker
 
     return CPUTimeMetricQueryRunner.safeBuild(
         new FinalizeResultsQueryRunner<>(
-                // info: 所以这里的 queryRunners 是 segment 粒度的，每个 segment 都单独执行
+                // info: 所以这里的 queryRunners 是 segment 粒度的，每个 segment 都单独执行，然后执行合并逻辑
             toolChest.mergeResults(factory.mergeRunners(queryProcessingPool, queryRunners)),
             toolChest
         ),
@@ -298,9 +300,11 @@ public class ServerManager implements QuerySegmentWalker
     }
     String segmentIdString = segmentId.toString();
 
+    // info：用来计时的
     MetricsEmittingQueryRunner<T> metricsEmittingQueryRunnerInner = new MetricsEmittingQueryRunner<>(
         emitter,
         toolChest,
+        // info: 真正执行的地方
         new ReferenceCountingSegmentQueryRunner<>(factory, segment, segmentDescriptor),
         QueryMetrics::reportSegmentTime,
         queryMetrics -> queryMetrics.segment(segmentIdString)
@@ -329,6 +333,7 @@ public class ServerManager implements QuerySegmentWalker
         cachingQueryRunner
     );
 
+    // info: 用来计时的
     MetricsEmittingQueryRunner<T> metricsEmittingQueryRunnerOuter = new MetricsEmittingQueryRunner<>(
         emitter,
         toolChest,

@@ -70,6 +70,7 @@ public class MaxSizeSplitHintSpec implements SplitHintSpec
       @JsonProperty("maxNumFiles") @Nullable Integer maxNumFiles
   )
   {
+    // info: 默认 1GB 或者 1000 个文件
     this.maxSplitSize = maxSplitSize == null ? DEFAULT_MAX_SPLIT_SIZE : maxSplitSize;
     this.maxNumFiles = maxNumFiles == null ? DEFAULT_MAX_NUM_FILES : maxNumFiles;
     Preconditions.checkArgument(this.maxSplitSize.getBytes() > 0, "maxSplitSize should be larger than 0");

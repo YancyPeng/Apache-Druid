@@ -178,6 +178,7 @@ public class ExecutorLifecycle
     }
 
     statusFuture = Futures.transform(
+        // info: 执行 task
         taskRunner.run(task),
         new Function<TaskStatus, TaskStatus>()
         {

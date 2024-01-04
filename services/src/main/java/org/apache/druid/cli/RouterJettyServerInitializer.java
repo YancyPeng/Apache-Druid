@@ -98,6 +98,7 @@ public class RouterJettyServerInitializer implements JettyServerInitializer
 
     root.addServlet(new ServletHolder(new DefaultServlet()), "/*");
 
+    // info: 原来是在这里设置了 router 的 serverlet path
     ServletHolder queryServletHolder = buildServletHolder(asyncQueryForwardingServlet, routerHttpClientConfig);
     root.addServlet(queryServletHolder, "/druid/v2/*");
     root.addServlet(queryServletHolder, "/druid/v1/lookups/*");

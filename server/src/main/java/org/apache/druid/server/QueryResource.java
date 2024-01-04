@@ -174,7 +174,7 @@ public class QueryResource implements QueryCountStatsProvider
    *
    * info: historical 使用 ServerManager 类来处理
    *
-   * info:
+   * info: clipoen 使用 SingleTaskBackgroundRunner 类来处理
    * @param in
    * @param pretty
    * @param req
@@ -192,7 +192,7 @@ public class QueryResource implements QueryCountStatsProvider
       @Context final HttpServletRequest req
   ) throws IOException
   {
-    // info: ClientQuerySegmentWalker
+    // info: ServerManager
     final QueryLifecycle queryLifecycle = queryLifecycleFactory.factorize();
     Query<?> query = null;
 

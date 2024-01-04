@@ -1012,6 +1012,7 @@ public class BatchAppenderator implements Appenderator
         throw new ISE("Missing hydrant [%,d] in identifier [%s].", hydrants.size(), identifier);
       }
 
+      // info: 添加索引
       hydrants.add(
           new FireHydrant(
               new QueryableIndexSegment(indexIO.loadIndex(hydrantDir), identifier.asSegmentId()),

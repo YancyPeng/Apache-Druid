@@ -401,6 +401,7 @@ public class ClientQuerySegmentWalker implements QuerySegmentWalker
 
     return new FluentQueryRunnerBuilder<>(toolChest)
         .create(
+                // info: 添加查询的超时时间
             new SetAndVerifyContextQueryRunner<>(
                 serverConfig,
                 // info: 重试的 runner

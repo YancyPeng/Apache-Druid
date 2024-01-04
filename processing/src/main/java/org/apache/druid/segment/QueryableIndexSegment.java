@@ -33,6 +33,7 @@ public class QueryableIndexSegment implements Segment
   public QueryableIndexSegment(QueryableIndex index, final SegmentId segmentId)
   {
     this.index = index;
+    // info: 在这里定义了当前这个 segment 文件的 index
     this.storageAdapter = new QueryableIndexStorageAdapter(index);
     this.segmentId = segmentId;
   }

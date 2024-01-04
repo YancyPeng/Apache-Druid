@@ -238,6 +238,7 @@ public class IndexMergerV9 implements IndexMerger
       final List<ColumnCapabilities> dimCapabilities = Lists.newArrayListWithCapacity(mergedDimensions.size());
       mergeCapabilities(adapters, mergedDimensions, metricsValueTypes, metricTypeNames, dimCapabilities);
 
+      // info: <dim, dimHandler>
       final Map<String, DimensionHandler> handlers = makeDimensionHandlers(mergedDimensions, dimCapabilities);
       final List<DimensionMergerV9> mergers = new ArrayList<>();
       for (int i = 0; i < mergedDimensions.size(); i++) {
@@ -245,12 +246,14 @@ public class IndexMergerV9 implements IndexMerger
         mergers.add(handler.makeMerger(indexSpec, segmentWriteOutMedium, dimCapabilities.get(i), progress, closer));
       }
 
+      // info: 设置 dim 值的 mapping 关系
       /************* Setup Dim Conversions **************/
       progress.progress();
       startTime = System.currentTimeMillis();
       writeDimValuesAndSetupDimConversion(adapters, progress, mergedDimensions, mergers);
       log.debug("Completed dim conversions in %,d millis.", System.currentTimeMillis() - startTime);
 
+      // info: 根据 dim 列 合并数据
       /************* Walk through data sets, merge them, and write merged columns *************/
       progress.progress();
       final TimeAndDimsIterator timeAndDimsIterator = makeMergedTimeAndDimsIterator(
@@ -275,10 +278,13 @@ public class IndexMergerV9 implements IndexMerger
           fillRowNumConversions
       );
 
+
       /************ Create Inverted Indexes and Finalize Build Columns *************/
       final String section = "build inverted index and columns";
       progress.startSection(section);
+      // info: 写入 __time 列
       makeTimeColumn(v9Smoosher, progress, timeWriter, indexSpec);
+      // info: 写入 metric 列
       makeMetricsColumns(
           v9Smoosher,
           progress,
@@ -289,6 +295,7 @@ public class IndexMergerV9 implements IndexMerger
           indexSpec
       );
 
+      // info: 写入 index
       for (int i = 0; i < mergedDimensions.size(); i++) {
         DimensionMergerV9 merger = mergers.get(i);
         merger.writeIndexes(rowNumConversions);
@@ -1115,6 +1122,7 @@ public class IndexMergerV9 implements IndexMerger
     return count;
   }
 
+  // info: indexes 与需要合并的文件数量有关
   private File merge(
       List<IndexableAdapter> indexes,
       final boolean rollup,

@@ -146,6 +146,7 @@ public class PartialHashSegmentGenerateTask extends PartialSegmentGenerateTask<G
     final GranularitySpec granularitySpec = ingestionSchema.getDataSchema().getGranularitySpec();
     final ParallelIndexTuningConfig tuningConfig = ingestionSchema.getTuningConfig();
     final HashedPartitionsSpec partitionsSpec = (HashedPartitionsSpec) tuningConfig.getGivenOrDefaultPartitionsSpec();
+    //
     return SegmentAllocators.forNonLinearPartitioning(
         toolbox,
         getDataSource(),

@@ -62,6 +62,8 @@ import java.util.stream.Collectors;
  * Endpoints for submitting and starting a {@link SupervisorSpec}, getting running supervisors, stopping supervisors,
  * and getting supervisor history.
  */
+// info: 流式摄取。supervisors 通过管理 kafka 索引任务的创建和生存期来便于 Kafka 摄取数据
+
 @Path("/druid/indexer/v1/supervisor")
 public class SupervisorResource
 {

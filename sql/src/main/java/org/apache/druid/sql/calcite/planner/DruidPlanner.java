@@ -325,6 +325,7 @@ public class DruidPlanner implements Closeable
           plannerContext.getParameters()
       );
       final Supplier<Sequence<Object[]>> resultsSupplier = () -> {
+        // info: 这里就查到了结果！
         final Enumerable<?> enumerable = theRel.bind(dataContext);
         final Enumerator<?> enumerator = enumerable.enumerator();
         return Sequences.withBaggage(new BaseSequence<>(

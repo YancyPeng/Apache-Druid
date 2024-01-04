@@ -135,7 +135,9 @@ public class WorkerTaskManager
         cleanupAndMakeTmpTaskDir();
         registerLocationListener();
         restoreRestorableTasks();
+
         initAssignedTasks();
+
         initCompletedTasks();
         scheduleCompletedTasksCleanup();
         lifecycleLock.started();
@@ -278,6 +280,7 @@ public class WorkerTaskManager
       }
 
       try {
+        // info: 把 taskId 写入文件中
         FileUtils.writeAtomically(
             new File(getAssignedTaskDir(), task.getId()),
             getTmpTaskDir(),
@@ -303,7 +306,7 @@ public class WorkerTaskManager
           )
       );
     }
-
+    //info: 执行任务
     submitNoticeToExec(new RunNotice(task));
   }
 
@@ -663,6 +666,7 @@ public class WorkerTaskManager
           return;
         }
 
+        // info: 在这里 run task
         final ListenableFuture<TaskStatus> future = taskRunner.run(task);
         addRunningTask(task, future);
 

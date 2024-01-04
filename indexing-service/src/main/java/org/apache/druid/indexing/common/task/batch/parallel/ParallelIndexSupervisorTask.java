@@ -470,6 +470,8 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
               baseInputSource.getClass().getSimpleName()
           );
         } else if (ingestionSchema.getTuningConfig().getMaxNumConcurrentSubTasks() <= 1) {
+          // info: 如果是 index_prallel 模式，但是 maxNumConcurrentSubTasks 设置为 1 的话，最终还是按照顺序执行
+
           LOG.warn(
               "maxNumConcurrentSubTasks[%s] is less than or equal to 1. Running sequentially. "
               + "Please set maxNumConcurrentSubTasks to something higher than 1 if you want to run in parallel "
@@ -646,6 +648,7 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
       ParallelIndexTaskRunner<PartialDimensionCardinalityTask, DimensionCardinalityReport> cardinalityRunner =
           createRunner(
               toolbox,
+              // info: partial_dimenson_cardinality
               this::createPartialDimensionCardinalityRunner
           );
 
@@ -666,11 +669,13 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
       }
 
       if (partitionsSpec.getNumShards() == null) {
+        // info: 和参数 maxRowsPerSegment 有关
         int effectiveMaxRowsPerSegment = partitionsSpec.getMaxRowsPerSegment() == null
                                          ? PartitionsSpec.DEFAULT_MAX_ROWS_PER_SEGMENT
                                          : partitionsSpec.getMaxRowsPerSegment();
         LOG.info("effective maxRowsPerSegment is: " + effectiveMaxRowsPerSegment);
 
+        // info：在这里进行分割
         intervalToNumShards = determineNumShardsFromCardinalityReport(
             cardinalityRunner.getReports().values(),
             effectiveMaxRowsPerSegment
@@ -696,9 +701,12 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
     ParallelIndexTaskRunner<PartialHashSegmentGenerateTask, GeneratedPartitionsReport> indexingRunner =
         createRunner(
             toolbox,
+            // info: partial_index_generate
             f -> createPartialHashSegmentGenerateRunner(toolbox, segmentCreateIngestionSpec, intervalToNumShards)
         );
 
+    // info: 这里会根据分割规范（Split Hint Spec，默认 1GB 或者 1000 个文件）来创建 segmentGenerateRunner
+    // info: 所以意思是在 1GB/1000个文件内部，再根据 intervalToNumShards 进行分割？
     state = runNextPhase(indexingRunner);
     if (state.isFailure()) {
       String errMsg = StringUtils.format(
@@ -712,6 +720,7 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
     // partition (interval, partitionId) -> partition locations
     Map<Pair<Interval, Integer>, List<PartitionLocation>> partitionToLocations =
         groupGenericPartitionLocationsPerPartition(indexingRunner.getReports());
+    // info: partial_index_generate_merge 并行处理 runner 的数量是 ioConfigs 的 size
     final List<PartialSegmentMergeIOConfig> ioConfigs = createGenericMergeIOConfigs(
         ingestionSchema.getTuningConfig().getTotalNumMergeTasks(),
         partitionToLocations
@@ -720,6 +729,7 @@ public class ParallelIndexSupervisorTask extends AbstractBatchIndexTask implemen
     final ParallelIndexIngestionSpec segmentMergeIngestionSpec = ingestionSchemaToUse;
     final ParallelIndexTaskRunner<PartialGenericSegmentMergeTask, PushedSegmentsReport> mergeRunner = createRunner(
         toolbox,
+        // info: partial_index_generate_merge
         tb -> createPartialGenericSegmentMergeRunner(tb, ioConfigs, segmentMergeIngestionSpec)
     );
     state = runNextPhase(mergeRunner);

@@ -408,6 +408,7 @@ public class QueryContexts
 
   static <T> long getDefaultTimeout(Query<T> query)
   {
+    // info: 默认的超时时间是 5 min
     final long defaultTimeout = parseLong(query, DEFAULT_TIMEOUT_KEY, DEFAULT_TIMEOUT_MILLIS);
     Preconditions.checkState(defaultTimeout >= 0, "Timeout must be a non negative value, but was [%s]", defaultTimeout);
     return defaultTimeout;

@@ -149,6 +149,7 @@ public interface Task
   /**
    * @return true if this Task type is queryable, such as streaming ingestion tasks
    */
+  // info: 一般的 stream task 都是可以查询的，比如 kafka
   boolean supportsQueries();
 
   /**

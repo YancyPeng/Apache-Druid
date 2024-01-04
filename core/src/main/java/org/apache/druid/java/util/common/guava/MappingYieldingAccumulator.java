@@ -58,6 +58,7 @@ public class MappingYieldingAccumulator<OutType, InType, MappedType> extends Yie
   @Override
   public OutType accumulate(OutType accumulated, InType in)
   {
+    // info：最里面的执行之处
     return baseAccumulator.accumulate(accumulated, fn.apply(in));
   }
 }

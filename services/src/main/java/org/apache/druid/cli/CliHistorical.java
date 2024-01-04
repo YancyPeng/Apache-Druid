@@ -101,6 +101,7 @@ public class CliHistorical extends ServerRunnable
 
           // register Server before binding ZkCoordinator to ensure HTTP endpoints are available immediately
           LifecycleModule.register(binder, Server.class);
+          // info: serverManager，historical 的查询全靠这个
           binder.bind(ServerManager.class).in(LazySingleton.class);
           binder.bind(SegmentManager.class).in(LazySingleton.class);
           binder.bind(ZkCoordinator.class).in(ManageLifecycle.class);

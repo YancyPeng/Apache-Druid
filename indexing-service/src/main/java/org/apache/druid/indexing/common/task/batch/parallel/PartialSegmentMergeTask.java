@@ -148,6 +148,7 @@ abstract class PartialSegmentMergeTask<S extends ShardSpec> extends PerfectRollu
                          .add(location);
     }
 
+    // info: 获取任务锁，这里可能阻塞
     final List<TaskLock> locks = toolbox.getTaskActionClient().submit(
         new SurrogateAction<>(supervisorTaskId, new LockListAction())
     );
@@ -188,6 +189,7 @@ abstract class PartialSegmentMergeTask<S extends ShardSpec> extends PerfectRollu
     FileUtils.deleteQuietly(persistDir);
     FileUtils.forceMkdir(persistDir);
 
+    // info: 合并 segment，生成 index，push 到 deep storage
     final Set<DataSegment> pushedSegments = mergeAndPushSegments(
         toolbox,
         getDataSchema(),
@@ -331,6 +333,7 @@ abstract class PartialSegmentMergeTask<S extends ShardSpec> extends PerfectRollu
       }
       final File outDir = new File(baseOutDir, StringUtils.format("merged_%d", suffix++));
       mergedFiles.add(
+
           merger.mergeQueryableIndex(
               indexesToMerge,
               dataSchema.getGranularitySpec().isRollup(),

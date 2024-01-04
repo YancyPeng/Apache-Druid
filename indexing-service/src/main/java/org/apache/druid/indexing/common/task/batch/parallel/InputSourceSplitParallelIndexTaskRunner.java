@@ -67,6 +67,7 @@ abstract class InputSourceSplitParallelIndexTaskRunner<T extends Task, R extends
   @Override
   Iterator<SubTaskSpec<T>> subTaskSpecIterator() throws IOException
   {
+    // info: 这里拆分成了多个任务，实际上并不是一个任务在执行，而是多任务并行执行
     return baseInputSource.createSplits(
         ingestionSchema.getIOConfig().getInputFormat(),
         getTuningConfig().getSplitHintSpec()

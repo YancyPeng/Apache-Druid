@@ -54,6 +54,7 @@ public class SetAndVerifyContextQueryRunner<T> implements QueryRunner<T>
     );
   }
 
+  // info: 添加了查询的超时时间
   public Query<T> withTimeoutAndMaxScatterGatherBytes(Query<T> query, ServerConfig serverConfig)
   {
     Query<T> newQuery = QueryContexts.verifyMaxQueryTimeout(

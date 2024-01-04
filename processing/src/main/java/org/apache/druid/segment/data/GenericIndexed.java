@@ -268,7 +268,9 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
 
     buffer.position(valuesOffset);
     // Ensure the value buffer's limit equals to capacity.
+    // info: slice = limit - position
     firstValueBuffer = buffer.slice();
+    // info: value buffer
     valueBuffers = new ByteBuffer[]{firstValueBuffer};
 
     // info: headerBuffer 是从 indexOffset 开始的子序列
@@ -368,7 +370,7 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
 
       T currValue = indexed.get(currIndex);
       int comparison = strategy.compare(currValue, value);
-      // info: 如果相同就返回当前的 下标，这个下标代表什么？
+      // info: 如果相同就返回当前的 下标，这个下标代表什么？代表 dictionary 中 value 对应的 index
       if (comparison == 0) {
         return currIndex;
       }
@@ -626,6 +628,7 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
       // info: 获取当前 value + 1 的 startOffset，用来当作 endOffset
       endOffset = headerBuffer.getInt(headerPosition + Integer.BYTES);
     }
+    // info: 这里 start 和 end 只隔了 4 个字节
     return copyBufferAndGet(firstValueBuffer, startOffset, endOffset);
   }
 
@@ -644,6 +647,7 @@ public class GenericIndexed<T> implements CloseableIndexed<T>, Serializer
 
         if (index == 0) {
           startOffset = Integer.BYTES;
+          // info: 从 byteBuffer 中给定的 index 位置，读取4个字节（int）,拼装成 int 返回
           endOffset = headerBuffer.getInt(0);
         } else {
           int headerPosition = (index - 1) * Integer.BYTES;
